@@ -38,9 +38,9 @@ import (
 )
 
 var (
-	NsExif    *xmp.Namespace    = &xmp.Namespace{"exif", "http://ns.adobe.com/exif/1.0/", NewModel}
-	NsExifEX  *xmp.Namespace    = &xmp.Namespace{"exifEX", "http://cipa.jp/exif/1.0/", NewModel}
-	NsExifAux *xmp.Namespace    = &xmp.Namespace{"aux", "http://ns.adobe.com/exif/1.0/aux/", NewModel}
+	NsExif    *xmp.Namespace    = xmp.NewNamespace("exif", "http://ns.adobe.com/exif/1.0/", NewModel)
+	NsExifEX  *xmp.Namespace    = xmp.NewNamespace("exifEX", "http://cipa.jp/exif/1.0/", NewModel)
+	NsExifAux *xmp.Namespace    = xmp.NewNamespace("aux", "http://ns.adobe.com/exif/1.0/aux/", NewModel)
 	nslist    xmp.NamespaceList = xmp.NamespaceList{NsExif, NsExifEX, NsExifAux}
 )
 

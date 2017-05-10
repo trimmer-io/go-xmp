@@ -22,7 +22,7 @@ import (
 )
 
 var (
-	NsXmpDM = &xmp.Namespace{"xmpDM", "http://ns.adobe.com/xmp/1.0/DynamicMedia/", NewModel} // Dynamc Media
+	NsXmpDM = xmp.NewNamespace("xmpDM", "http://ns.adobe.com/xmp/1.0/DynamicMedia/", NewModel)
 )
 
 func init() {

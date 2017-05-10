@@ -21,8 +21,8 @@ import (
 )
 
 var (
-	NsXmpBJ = &xmp.Namespace{"xmpBJ", "http://ns.adobe.com/xap/1.0/bj/", NewModel} // Bath Jobs
-	nsStJob = &xmp.Namespace{"stJob", "http://ns.adobe.com/xap/1.0/sType/Job#", nil}
+	NsXmpBJ = xmp.NewNamespace("xmpBJ", "http://ns.adobe.com/xap/1.0/bj/", NewModel)
+	nsStJob = xmp.NewNamespace("stJob", "http://ns.adobe.com/xap/1.0/sType/Job#", nil)
 )
 
 func init() {

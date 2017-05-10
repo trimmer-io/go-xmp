@@ -22,11 +22,11 @@ import (
 )
 
 var (
-	NsXmp = &xmp.Namespace{"xmp", "http://ns.adobe.com/xap/1.0/", NewModel} // XP Base
+	NsXmp = xmp.NewNamespace("xmp", "http://ns.adobe.com/xap/1.0/", NewModel)
 
-	nsXmpIdq  = &xmp.Namespace{"xmpidq", "http://ns.adobe.com/xmp/Identifier/qual/1.0/", nil} // qualifiers
-	nsXmpG    = &xmp.Namespace{"xmpG", "http://ns.adobe.com/xap/1.0/g/", nil}                 // Graphics
-	nsXmpGImg = &xmp.Namespace{"xmpGImg", "http://ns.adobe.com/xap/1.0/g/img/", nil}          // Image
+	nsXmpIdq  = xmp.NewNamespace("xmpidq", "http://ns.adobe.com/xmp/Identifier/qual/1.0/", nil)
+	nsXmpG    = xmp.NewNamespace("xmpG", "http://ns.adobe.com/xap/1.0/g/", nil)
+	nsXmpGImg = xmp.NewNamespace("xmpGImg", "http://ns.adobe.com/xap/1.0/g/img/", nil)
 )
 
 func init() {

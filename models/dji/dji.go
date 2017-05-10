@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	NsDJI = &xmp.Namespace{"drone-dji", "http://www.dji.com/drone-dji/1.0/", NewModel}
+	NsDJI = xmp.NewNamespace("drone-dji", "http://www.dji.com/drone-dji/1.0/", NewModel)
 )
 
 func init() {

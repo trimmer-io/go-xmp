@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	NsXmpRights = &xmp.Namespace{"xmpRights", "http://ns.adobe.com/xap/1.0/rights/", NewModel} // Rights
+	NsXmpRights = xmp.NewNamespace("xmpRights", "http://ns.adobe.com/xap/1.0/rights/", NewModel)
 )
 
 func init() {

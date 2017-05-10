@@ -42,7 +42,7 @@ import (
 )
 
 var (
-	NsID3 = &xmp.Namespace{"id3", "http://id3.org/ns/2.4/", NewModel}
+	NsID3 = xmp.NewNamespace("id3", "http://id3.org/ns/2.4/", NewModel)
 )
 
 func init() {

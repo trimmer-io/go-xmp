@@ -27,7 +27,7 @@ import (
 )
 
 var (
-	NsCC = &xmp.Namespace{"cc", "http://creativecommons.org/ns#", NewModel}
+	NsCC = xmp.NewNamespace("cc", "http://creativecommons.org/ns#", NewModel)
 )
 
 func init() {

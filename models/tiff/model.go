@@ -26,7 +26,7 @@ import (
 )
 
 var (
-	NsTiff = &xmp.Namespace{"tiff", "http://ns.adobe.com/tiff/1.0/", NewModel}
+	NsTiff = xmp.NewNamespace("tiff", "http://ns.adobe.com/tiff/1.0/", NewModel)
 )
 
 func init() {

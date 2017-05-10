@@ -22,7 +22,7 @@ import (
 )
 
 var (
-	NsMP4 *xmp.Namespace = &xmp.Namespace{"mp4", "http://ns.apple.com/quicktime/mp4/1.0/", NewModel}
+	NsMP4 = xmp.NewNamespace("mp4", "http://ns.apple.com/quicktime/mp4/1.0/", NewModel)
 )
 
 func init() {

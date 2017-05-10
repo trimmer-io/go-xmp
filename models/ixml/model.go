@@ -39,7 +39,7 @@ import (
 const ixmlVersion = "2.0"
 
 var (
-	NsIXML = &xmp.Namespace{"iXML", "http://ns.adobe.com/ixml/1.0/", NewModel}
+	NsIXML = xmp.NewNamespace("iXML", "http://ns.adobe.com/ixml/1.0/", NewModel)
 )
 
 func init() {

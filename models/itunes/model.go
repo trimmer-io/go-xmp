@@ -24,7 +24,7 @@ import (
 )
 
 var (
-	NsITunes = &xmp.Namespace{"iTunes", "http://ns.apple.com/itunes/1.0/", NewModel}
+	NsITunes = xmp.NewNamespace("iTunes", "http://ns.apple.com/itunes/1.0/", NewModel)
 )
 
 func init() {

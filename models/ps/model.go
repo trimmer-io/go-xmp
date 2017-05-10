@@ -24,7 +24,7 @@ import (
 )
 
 var (
-	NsPhotoshop = &xmp.Namespace{"photoshop", "http://ns.adobe.com/photoshop/1.0/", NewModel}
+	NsPhotoshop = xmp.NewNamespace("photoshop", "http://ns.adobe.com/photoshop/1.0/", NewModel)
 )
 
 func init() {

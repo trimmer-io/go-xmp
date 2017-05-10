@@ -24,7 +24,7 @@ import (
 )
 
 var (
-	NsRiff = &xmp.Namespace{"riffinfo", "http://ns.adobe.com/riff/info", NewModel}
+	NsRiff = xmp.NewNamespace("riffinfo", "http://ns.adobe.com/riff/info", NewModel)
 )
 
 func init() {

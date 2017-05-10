@@ -23,10 +23,10 @@ import (
 )
 
 var (
-	NsXmpMM = &xmp.Namespace{"xmpMM", "http://ns.adobe.com/xap/1.0/mm/", NewModel} // Meda Management
-	nsStEvt = &xmp.Namespace{"stEvt", "http://ns.adobe.com/xap/1.0/sType/ResourceEvent#", nil}
-	nsStRef = &xmp.Namespace{"stRef", "http://ns.adobe.com/xap/1.0/sType/ResourceRef#", nil}
-	nsStVer = &xmp.Namespace{"stVer", "http://ns.adobe.com/xap/1.0/sType/Version#", nil}
+	NsXmpMM = xmp.NewNamespace("xmpMM", "http://ns.adobe.com/xap/1.0/mm/", NewModel)
+	nsStEvt = xmp.NewNamespace("stEvt", "http://ns.adobe.com/xap/1.0/sType/ResourceEvent#", nil)
+	nsStRef = xmp.NewNamespace("stRef", "http://ns.adobe.com/xap/1.0/sType/ResourceRef#", nil)
+	nsStVer = xmp.NewNamespace("stVer", "http://ns.adobe.com/xap/1.0/sType/Version#", nil)
 )
 
 func init() {

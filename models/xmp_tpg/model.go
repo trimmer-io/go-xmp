@@ -22,9 +22,9 @@ import (
 )
 
 var (
-	NsXmpTPg = &xmp.Namespace{"xmpTPg", "http://ns.adobe.com/xap/1.0/t/pg/", NewModel} // Pagd File
-	nsStDim  = &xmp.Namespace{"stDim", "http://ns.adobe.com/xap/1.0/sType/Dimensions#", nil}
-	nsStFnt  = &xmp.Namespace{"stFnt", "http://ns.adobe.com/xap/1.0/sType/Font#", nil}
+	NsXmpTPg = xmp.NewNamespace("xmpTPg", "http://ns.adobe.com/xap/1.0/t/pg/", NewModel)
+	nsStDim  = xmp.NewNamespace("stDim", "http://ns.adobe.com/xap/1.0/sType/Dimensions#", nil)
+	nsStFnt  = xmp.NewNamespace("stFnt", "http://ns.adobe.com/xap/1.0/sType/Font#", nil)
 )
 
 func init() {

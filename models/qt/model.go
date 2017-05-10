@@ -60,7 +60,7 @@ import (
 )
 
 var (
-	NsQuicktime = &xmp.Namespace{"qt", "http://ns.apple.com/quicktime/1.0/", NewModel}
+	NsQuicktime = xmp.NewNamespace("qt", "http://ns.apple.com/quicktime/1.0/", NewModel)
 )
 
 func init() {

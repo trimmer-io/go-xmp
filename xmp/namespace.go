@@ -100,6 +100,14 @@ func (l NamespaceGroupList) Contains(ns *Namespace) bool {
 	return false
 }
 
+func NewNamespace(name, uri string, factory ModelFactory) *Namespace {
+	return &Namespace{
+		Name:    name,
+		URI:     uri,
+		Factory: factory,
+	}
+}
+
 func (n Namespace) NewModel() Model {
 	if n.Factory != nil {
 		return n.Factory(n.GetName())

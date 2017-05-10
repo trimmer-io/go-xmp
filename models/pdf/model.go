@@ -23,7 +23,7 @@ import (
 )
 
 var (
-	NsPDF = &xmp.Namespace{"pdf", "http://ns.adobe.com/pdf/1.3/", NewModel}
+	NsPDF = xmp.NewNamespace("pdf", "http://ns.adobe.com/pdf/1.3/", NewModel)
 )
 
 func init() {

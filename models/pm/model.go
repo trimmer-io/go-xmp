@@ -28,7 +28,7 @@ import (
 )
 
 var (
-	NsPm = &xmp.Namespace{"photomechanic", "http://ns.camerabits.com/photomechanic/1.0/", NewModel}
+	NsPm = xmp.NewNamespace("photomechanic", "http://ns.camerabits.com/photomechanic/1.0/", NewModel)
 )
 
 func init() {

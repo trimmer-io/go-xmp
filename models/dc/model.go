@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	NsDc = &xmp.Namespace{"dc", "http://purl.org/dc/elements/1.1/", NewModel}
+	NsDc = xmp.NewNamespace("dc", "http://purl.org/dc/elements/1.1/", NewModel)
 )
 
 func init() {

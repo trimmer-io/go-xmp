@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	NsCrs = &xmp.Namespace{"crs", "http://ns.adobe.com/camera-raw-settings/1.0/", NewModel}
+	NsCrs = xmp.NewNamespace("crs", "http://ns.adobe.com/camera-raw-settings/1.0/", NewModel)
 )
 
 func init() {
