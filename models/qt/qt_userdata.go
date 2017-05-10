@@ -145,10 +145,6 @@ type QtUserdata struct {
 	TrackType      string  `qt:"kgtt" xmp:"qt:TrackType"`
 	WindowLocation Point   `qt:"WLOC" xmp:"qt:WindowLocation"`
 
-	// embedded XML documents
-	// IXML string `qt:"iXML" xmp:"qt:ixml" json:"qt:iXML,omitempty"`
-	// XMP  string `qt:"XMP_" xmp:"-" json:"-"`
-
 	//
 	// Vendor-specific tags
 	//
@@ -161,7 +157,7 @@ type QtUserdata struct {
 	GoogleTrackDuration string `qt:"gstd" xmp:"qt:GoogleTrackDuration"`
 
 	// Microsoft http://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/Microsoft.html
-	// MicrosoftExtra   MicrosoftExtra `qt:"Xtra" xmp:"msft:Extra" json:"-"`
+	// MicrosoftExtra   MicrosoftExtra `qt:"Xtra" xmp:"msft:Extra"`
 
 	// Canon Cameras
 	CanonCodec     string `qt:"CNCV" xmp:"qt:CanonCodec"`    // "CanonAVC0002"

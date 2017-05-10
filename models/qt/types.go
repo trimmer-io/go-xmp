@@ -47,14 +47,14 @@ func (x *MultilangArray) UnmarshalXMP(d *xmp.Decoder, node *xmp.Node, m xmp.Mode
 }
 
 type Location struct {
-	Body      string       `xmp:"qt:Body,attr"      json:"qt:Body,omitempty"`
-	Date      xmp.Date     `xmp:"qt:Date,attr"      json:"qt:Date,omitempty"`
-	Longitude xmp.GPSCoord `xmp:"qt:Longitude,attr" json:"qt:Longitude,omitempty"`
-	Latitude  xmp.GPSCoord `xmp:"qt:Latitude,attr"  json:"qt:Latitude,omitempty"`
-	Altitude  float64      `xmp:"qt:Altitude,attr"  json:"qt:Altitude,omitempty"`
-	Name      string       `xmp:"qt:Name,attr"      json:"qt:Name,omitempty"`
-	Note      string       `xmp:"qt:Note,attr"      json:"qt:Note,omitempty"`
-	Role      LocationRole `xmp:"qt:Role,attr"      json:"qt:Role,omitempty"`
+	Body      string       `xmp:"qt:Body,attr"`
+	Date      xmp.Date     `xmp:"qt:Date,attr"`
+	Longitude xmp.GPSCoord `xmp:"qt:Longitude,attr"`
+	Latitude  xmp.GPSCoord `xmp:"qt:Latitude,attr"`
+	Altitude  float64      `xmp:"qt:Altitude,attr"`
+	Name      string       `xmp:"qt:Name,attr"`
+	Note      string       `xmp:"qt:Note,attr"`
+	Role      LocationRole `xmp:"qt:Role,attr"`
 }
 
 func (x *Location) UnmarshalText(data []byte) error {
@@ -108,10 +108,10 @@ func (x Point) MarshalText() ([]byte, error) {
 }
 
 type ContentRating struct {
-	Standard string `xmp:"qt:Standard,attr"   json:"qt:Standard,omitempty"`
-	Rating   string `xmp:"qt:Rating,attr"     json:"qt:Rating,omitempty"`
-	Score    string `xmp:"qt:Score,attr"      json:"qt:Score,omitempty"`
-	Reasons  string `xmp:"qt:Reasons,attr"    json:"qt:Reasons,omitempty"`
+	Standard string `xmp:"qt:Standard,attr"`
+	Rating   string `xmp:"qt:Rating,attr"`
+	Score    string `xmp:"qt:Score,attr"`
+	Reasons  string `xmp:"qt:Reasons,attr"`
 }
 
 func (x ContentRating) IsZero() bool {

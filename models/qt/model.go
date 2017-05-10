@@ -78,7 +78,8 @@ type QtInfo struct {
 	ProApps *QtProApps  `qt:"-" xmp:"qt:proapps"`
 
 	// external structs
-	IXML *ixml.IXML `qt:"-" xmp:"-"  json:"-"`
+	IXML *ixml.IXML    `qt:"-" xmp:"-"`
+	XMP  *xmp.Document `qt:"XMP_" xmp:"-"`
 
 	// unknown 3rd party tags
 	Extension xmp.TagList `qt:",any" xmp:"qt:extension"`
@@ -117,6 +118,11 @@ func (x *QtInfo) SyncFromXMP(d *xmp.Document) error {
 }
 
 func (x QtInfo) SyncToXMP(d *xmp.Document) error {
+	if x.XMP != nil {
+		if err := d.Merge(x.XMP); err != nil {
+			return err
+		}
+	}
 	if x.Udta != nil {
 		if err := x.Udta.SyncToXMP(d); err != nil {
 			return err
@@ -158,7 +164,7 @@ func (x *QtInfo) CanTag(tag string) bool {
 	case strings.HasPrefix("com.apple.proapps", tag):
 		v := &QtProApps{}
 		return v.CanTag(tag)
-	case tag == "iXML" || tag == "info.ixml.xml" || tag == "info.ixml.metadata" || tag == "info.ixml.info":
+	case tag == "XMP_" || tag == "iXML" || tag == "info.ixml.xml" || tag == "info.ixml.metadata" || tag == "info.ixml.info":
 		return true
 	}
 	return false
@@ -242,6 +248,13 @@ func (x *QtInfo) SetTag(tag, value string) error {
 			return fmt.Errorf("%s: parsing ixml: %v", NsQuicktime.GetName(), err)
 		} else {
 			x.IXML = i
+		}
+	case tag == "XMP_":
+		v := xmp.NewDocument()
+		if err := xmp.Unmarshal([]byte(value), v); err != nil {
+			return fmt.Errorf("%s: parsing embedded xmp: %v", NsQuicktime.GetName(), err)
+		} else {
+			x.XMP = v
 		}
 	default:
 		// silently ignore all other sorts of tags
