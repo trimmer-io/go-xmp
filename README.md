@@ -74,6 +74,15 @@ Benchmarks
 ----------
 
 ```
+BenchmarkUnmarshalXMP-8         5000      339876 ns/op     56827 B/op     1007 allocs/op
+BenchmarkMarshalXMP-8           5000      257008 ns/op     60776 B/op      773 allocs/op
+BenchmarkMarshalJSON-8          5000      354320 ns/op     89390 B/op     1099 allocs/op
+BenchmarkUnmarshalJSON-8        5000      334702 ns/op     55558 B/op      915 allocs/op
+```
+
+XMP Marshal Benchmark using `premiere-cc.xmp`, a rather large xmpDM file with history, xmpMM:Pantry etc.
+
+```
   Compression Results 421        mean               min                  max
   -----------------------------------------------------------------------------
         Original sizes       4082 (100.0)        820 (100.0)      86940 (100.0)
@@ -93,14 +102,7 @@ Benchmarks
      JSON Snappy times           26.084µs            9.305µs          161.167µs
 ```
 
-XMP Marshal Benchmark using `premiere-cc.xmp`, a rather large xmpDM file with history, xmpMM:Pantry etc.
-
-```
-BenchmarkUnmarshalXMP-8         5000      339876 ns/op     56827 B/op     1007 allocs/op
-BenchmarkMarshalXMP-8           5000      257008 ns/op     60776 B/op      773 allocs/op
-BenchmarkMarshalJSON-8          5000      354320 ns/op     89390 B/op     1099 allocs/op
-BenchmarkUnmarshalJSON-8        5000      334702 ns/op     55558 B/op      915 allocs/op
-```
+Size matters when storing XMP in a database or sending documents over a network. Above is a quick comparison between common compression methods gzip and snappy regarding runtime and size for documents in the samples/ directory. What's also included is a comparison of the uncompressed documents in XMP/XML and XMP/JSON format. Original means the initial XMP document as stored in .xmp sidecar files. To be fair, some originals use padding, so the mean size distribution is larger than what go-xmp generated here because padding was turned off during write.
 
 Contributing
 ------------
