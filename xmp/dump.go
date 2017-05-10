@@ -16,7 +16,6 @@ package xmp
 
 import (
 	"fmt"
-	"github.com/echa/media-sdk/units"
 	"strings"
 )
 
@@ -58,5 +57,5 @@ func DumpStats() {
 	fmt.Println("xmp: Node Pool Hits   ", npHits)
 	fmt.Println("xmp: Node Pool Returns", npReturns)
 	fmt.Println("xmp: Node Pool InUse  ", npAllocs+npHits-npReturns-npFrees)
-	fmt.Println("xmp: Node Pool InPool ", units.Max64(0, npReturns-npHits))
+	fmt.Println("xmp: Node Pool InPool ", Max64(0, npReturns-npHits))
 }

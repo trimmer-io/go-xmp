@@ -420,3 +420,35 @@ func (f *NullFloat64) UnmarshalJSON(data []byte) error {
 	}
 	return f.UnmarshalText(data)
 }
+
+func Max(x, y int) int {
+	if x < y {
+		return y
+	} else {
+		return x
+	}
+}
+
+func Min(x, y int) int {
+	if x > y {
+		return y
+	} else {
+		return x
+	}
+}
+
+func Max64(x, y int64) int64 {
+	if x < y {
+		return y
+	} else {
+		return x
+	}
+}
+
+func Min64(x, y int64) int64 {
+	if x > y {
+		return y
+	} else {
+		return x
+	}
+}
