@@ -43,20 +43,27 @@ const (
 )
 
 // Note: when changing these tags, also update json.go for proper marshal/demarshal
-type ArrayItem struct {
+type AltItem struct {
 	Value     string `xmp:",chardata" json:"value"`
 	Lang      string `xmp:"xml:lang"  json:"lang"`
 	IsDefault bool   `xmp:"-"         json:"isDefault"`
 }
 
-func (x *ArrayItem) UnmarshalText(data []byte) error {
+func (x *AltItem) UnmarshalText(data []byte) error {
 	x.Value = string(data)
 	x.Lang = ""
 	x.IsDefault = true
 	return nil
 }
 
-type AltString []ArrayItem
+func (x AltItem) GetLang() string {
+	if x.Lang == "" && x.IsDefault {
+		return "x-default"
+	}
+	return x.Lang
+}
+
+type AltString []AltItem
 
 func (x AltString) IsZero() bool {
 	return len(x) == 0
@@ -69,12 +76,18 @@ func NewAltString(items ...interface{}) AltString {
 	a := make(AltString, 0)
 	for _, v := range items {
 		switch val := v.(type) {
-		case ArrayItem:
-			a = append(a, val)
+		case AltItem:
+			if val.Value != "" {
+				a = append(a, val)
+			}
 		case string:
-			a = append(a, ArrayItem{Value: val})
+			if val != "" {
+				a = append(a, AltItem{Value: val})
+			}
 		case fmt.Stringer:
-			a = append(a, ArrayItem{Value: val.String()})
+			if s := val.String(); s != "" {
+				a = append(a, AltItem{Value: s})
+			}
 		}
 	}
 	a.EnsureDefault()
@@ -137,7 +150,7 @@ func (a *AltString) AddDefault(lang string, value string) {
 	if value == "" {
 		return
 	}
-	i := ArrayItem{
+	i := AltItem{
 		Value:     value,
 		Lang:      lang,
 		IsDefault: true,
@@ -152,21 +165,22 @@ func (a *AltString) AddDefault(lang string, value string) {
 	*a = append(AltString{i}, (*a)...)
 }
 
-func (a *AltString) AddUnique(lang string, value string) {
+func (a *AltString) AddUnique(lang string, value string) bool {
 	if value == "" {
-		return
+		return false
 	}
 	if idx := a.Index(lang); idx > -1 && (*a)[idx].Value == value {
-		return
+		return false
 	}
 	a.Add(lang, value)
+	return true
 }
 
 func (a *AltString) Add(lang string, value string) {
 	if value == "" {
 		return
 	}
-	*a = append(*a, ArrayItem{
+	*a = append(*a, AltItem{
 		Value:     value,
 		Lang:      lang,
 		IsDefault: false,
@@ -394,7 +408,13 @@ func NewStringList(items ...string) StringList {
 		return nil
 	}
 	x := make(StringList, 0, len(items))
-	return append(x, items...)
+	for _, v := range items {
+		if v == "" {
+			continue
+		}
+		x = append(x, v)
+	}
+	return x
 }
 
 func (x StringList) MarshalXMP(e *Encoder, node *Node, m Model) error {
@@ -427,7 +447,13 @@ func NewStringArray(items ...string) StringArray {
 		return nil
 	}
 	x := make(StringArray, 0, len(items))
-	return append(x, items...)
+	for _, v := range items {
+		if v == "" {
+			continue
+		}
+		x = append(x, v)
+	}
+	return x
 }
 
 func (x StringArray) IsZero() bool {
@@ -527,8 +553,8 @@ func MarshalArray(e *Encoder, node *Node, typ ArrayType, items interface{}) erro
 		v := val.Index(i).Interface()
 
 		// add xml:Lang attribute to alternatives
-		if reflect.TypeOf(v) == reflect.TypeOf(ArrayItem{}) {
-			ai := v.(ArrayItem)
+		if reflect.TypeOf(v) == reflect.TypeOf(AltItem{}) {
+			ai := v.(AltItem)
 			if typ == ArrayTypeAlternative {
 				if ai.IsDefault || val.Len() == 1 {
 					elem.AddStringAttr("xml:lang", "x-default")
@@ -601,10 +627,10 @@ func UnmarshalArray(d *Decoder, node *Node, typ ArrayType, out interface{}) erro
 		}
 
 		val := reflect.New(itemType)
-		if itemType == reflect.TypeOf(ArrayItem{}) {
-			// Special unmarshalling for ArrayItems with lang attributes
+		if itemType == reflect.TypeOf(AltItem{}) {
+			// Special unmarshalling for AltItems with lang attributes
 			//
-			i := val.Interface().(*ArrayItem)
+			i := val.Interface().(*AltItem)
 			if typ == ArrayTypeAlternative {
 				for _, v := range n.GetAttr("", "lang") {
 					switch v.Value {

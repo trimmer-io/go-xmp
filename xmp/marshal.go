@@ -157,7 +157,7 @@ func (e *Encoder) Encode(d *Document) error {
 
 	// 1  build output node tree (model -> nodes+attr with one root node per
 	//    XMP namespace)
-	for _, n := range d.Nodes {
+	for _, n := range d.nodes {
 
 		// 1.1  encode the model (Note: models typically use multiple XMP namespaces)
 		//      so we generate wrapper nodes on the fly
@@ -226,7 +226,7 @@ func (e *Encoder) Encode(d *Document) error {
 		Attr: make([]xml.Attr, 0),
 	}
 	start.Attr = append(start.Attr, xml.Attr{Name: xml.Name{Local: "xmlns:x"}, Value: "adobe:ns:meta/"})
-	tk := d.Toolkit
+	tk := d.toolkit
 	if tk == "" {
 		tk = XMP_TOOLKIT_VERSION
 	}
@@ -413,7 +413,7 @@ func (e *Encoder) marshalValue(val reflect.Value, finfo *fieldInfo, node *Node, 
 		// find or create output node for storing the attribute/node contents
 		var dest *Node
 		if withWrapper || node == nil {
-			ns := e.findNs(xml.Name{Local: finfo.name})
+			ns := e.findNs(NewName(finfo.name))
 			if ns == nil {
 				return fmt.Errorf("xmp: missing namespace for attr field %s", finfo.name)
 			}
@@ -427,7 +427,7 @@ func (e *Encoder) marshalValue(val reflect.Value, finfo *fieldInfo, node *Node, 
 			dest = node
 		}
 
-		name := xml.Name{Local: finfo.name}
+		name := NewName(finfo.name)
 		if err := e.marshalAttr(dest, name, fv); err != nil {
 			return err
 		}
@@ -467,7 +467,7 @@ func (e *Encoder) marshalValue(val reflect.Value, finfo *fieldInfo, node *Node, 
 		// find or create output node for storing the attribute/node contents
 		var dest *Node
 		if withWrapper || node == nil {
-			ns := e.findNs(xml.Name{Local: finfo.name})
+			ns := e.findNs(NewName(finfo.name))
 			if ns == nil {
 				return fmt.Errorf("xmp: marshalValue missing namespace for %s", finfo.name)
 			}
@@ -482,7 +482,7 @@ func (e *Encoder) marshalValue(val reflect.Value, finfo *fieldInfo, node *Node, 
 		}
 
 		// create a new node for this resource
-		resNode := NewNode(xml.Name{Local: finfo.name})
+		resNode := NewNode(NewName(finfo.name))
 		dest.AddNode(resNode)
 
 		if err := e.marshalValue(fv, &finfo, resNode, false); err != nil {

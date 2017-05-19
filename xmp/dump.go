@@ -21,10 +21,13 @@ import (
 
 func (n Node) Dump(d int) {
 	pfx := strings.Repeat(">", d)
+	if len(pfx) > 0 {
+		pfx += " "
+	}
 	if n.Model != nil {
-		fmt.Printf("%s NODE MODEL %s (%d attr, %d children)\n", pfx, n.XMLName.Local, len(n.Attr), len(n.Nodes))
+		fmt.Printf("%sNODE MODEL %s (%d attr, %d children)\n", pfx, n.XMLName.Local, len(n.Attr), len(n.Nodes))
 	} else {
-		fmt.Printf("%s NODE EXT  %s (%d attr, %d children)\n", pfx, n.XMLName.Local, len(n.Attr), len(n.Nodes))
+		fmt.Printf("%sNODE EXT  %s (%d attr, %d children)\n", pfx, n.XMLName.Local, len(n.Attr), len(n.Nodes))
 	}
 	for i, v := range n.Attr {
 		fmt.Printf("%s ATTR %2d %s := %s\n", pfx, i, v.Name.Local, v.Value)
@@ -37,9 +40,13 @@ func (n Node) Dump(d int) {
 
 func (d *Document) Dump() {
 	d.DumpNamespaces()
-	for _, v := range d.Nodes {
-		v.Dump(0)
+	p, _ := d.ListPaths()
+	for _, v := range p {
+		fmt.Printf("%s = %s\n", v.Path.String(), v.Value)
 	}
+	// for _, v := range d.Nodes {
+	// 	v.Dump(0)
+	// }
 }
 
 func (d *Document) DumpNamespaces() {

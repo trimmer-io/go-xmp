@@ -77,31 +77,34 @@ type ConverterFunc func(string) string
 type SyncFlags int
 
 const (
-	S_CREATE  SyncFlags = 1 << iota // create when not exist, nothing when exist or source is empty
-	S_REPLACE                       // replace when dest exist, nothing when missing or source is empty
-	S_DELETE                        // clear dest when source value is empty
-	S_APPEND                        // list-only: append non-empty source value
-	S_UNIQUE                        // list-only: append non-empty unique source value
-	S_DEFAULT = S_CREATE | S_REPLACE | S_DELETE | S_UNIQUE
-	S_MERGE   = S_CREATE | S_REPLACE | S_UNIQUE
+	CREATE  SyncFlags = 1 << iota // create when not exist, nothing when exist or source is empty
+	REPLACE                       // replace when dest exist, nothing when missing or source is empty
+	DELETE                        // clear dest when source value is empty
+	APPEND                        // list-only: append non-empty source value
+	UNIQUE                        // list-only: append non-empty unique source value
+	NOFAIL                        // don't fail when state+op+flags don't match
+	DEFAULT = CREATE | REPLACE | DELETE | UNIQUE
+	MERGE   = CREATE | REPLACE | UNIQUE
 )
 
 func ParseSyncFlag(s string) SyncFlags {
 	switch s {
 	case "create":
-		return S_CREATE
+		return CREATE
 	case "replace":
-		return S_REPLACE
+		return REPLACE
 	case "delete":
-		return S_DELETE
+		return DELETE
 	case "append":
-		return S_APPEND
+		return APPEND
 	case "unique":
-		return S_UNIQUE
+		return UNIQUE
+	case "nofail":
+		return NOFAIL
 	case "default":
-		return S_DEFAULT
+		return DEFAULT
 	case "merge":
-		return S_MERGE
+		return MERGE
 	default:
 		return 0
 	}
@@ -148,7 +151,7 @@ func (d *Document) Sync(sPath, dPath Path, flags SyncFlags, v Model, f Converter
 
 	// use default flags when zero
 	if flags == 0 {
-		flags = S_DEFAULT
+		flags = DEFAULT
 	}
 
 	// only XMP paths are supported here
@@ -156,8 +159,8 @@ func (d *Document) Sync(sPath, dPath Path, flags SyncFlags, v Model, f Converter
 		return nil
 	}
 
-	sNs, _ := sPath.Namespace()
-	dNs, _ := dPath.Namespace()
+	sNs, _ := sPath.Namespace(d)
+	dNs, _ := dPath.Namespace(d)
 
 	// skip when either namespace does not exist
 	if sNs == nil || dNs == nil {
@@ -182,18 +185,18 @@ func (d *Document) Sync(sPath, dPath Path, flags SyncFlags, v Model, f Converter
 
 	// create dPath model
 	if dModel == nil {
-		if flags&S_CREATE == 0 {
+		if flags&CREATE == 0 {
 			return nil
 		}
 		dModel = dNs.NewModel()
 		d.AddModel(dModel)
 	}
 
-	sValue, err := GetPath(sModel, sPath)
+	sValue, err := GetModelPath(sModel, sPath)
 	if err != nil {
 		return err
 	}
-	dValue, err := GetPath(dModel, dPath)
+	dValue, err := GetModelPath(dModel, dPath)
 	if err != nil {
 		return err
 	}
@@ -204,17 +207,17 @@ func (d *Document) Sync(sPath, dPath Path, flags SyncFlags, v Model, f Converter
 	}
 
 	// empty source will only be used with delete flag
-	if sValue == "" && flags&S_DELETE == 0 {
+	if sValue == "" && flags&DELETE == 0 {
 		return nil
 	}
 
 	// empty destination values require create flag
-	if dValue == "" && flags&S_CREATE == 0 {
+	if dValue == "" && flags&CREATE == 0 {
 		return nil
 	}
 
 	// existing destination values require replace/delete/append/unique flag
-	if dValue != "" && flags&(S_REPLACE|S_DELETE|S_APPEND|S_UNIQUE) == 0 {
+	if dValue != "" && flags&(REPLACE|DELETE|APPEND|UNIQUE) == 0 {
 		return nil
 	}
 
@@ -223,12 +226,38 @@ func (d *Document) Sync(sPath, dPath Path, flags SyncFlags, v Model, f Converter
 		sValue = f(sValue)
 	}
 
-	if err := SetPath(dModel, dPath, sValue, flags); err != nil {
+	if err := SetModelPath(dModel, dPath, sValue, flags); err != nil {
 		return err
 	}
 	if err == nil {
 		d.SetDirty()
 	}
 
+	return nil
+}
+
+func (d *Document) Merge(b *Document, flags SyncFlags) error {
+	p, err := b.ListPaths()
+	if err != nil {
+		return err
+	}
+
+	// copy namespaces
+	for n, v := range b.intNsMap {
+		d.intNsMap[n] = v
+	}
+	for n, v := range b.extNsMap {
+		d.extNsMap[n] = v
+	}
+
+	// copy content
+	for _, v := range p {
+		v.Flags = flags
+		if err := d.SetPath(v); err != nil {
+			return err
+		}
+	}
+
+	d.SetDirty()
 	return nil
 }

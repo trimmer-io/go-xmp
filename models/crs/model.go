@@ -243,6 +243,7 @@ type CameraRawInfo struct {
 	NegativeCacheLargePreviewSize         int64           `xmp:"crs:NegativeCacheLargePreviewSize"`
 	JPEGHandling                          string          `xmp:"crs:JPEGHandling"`
 	TIFFHandling                          string          `xmp:"crs:TIFFHandling"`
+	GradientBasedCorrections              CorrectionList  `xmp:"crs:GradientBasedCorrections"`
 	CircularGradientBasedCorrections      CorrectionList  `xmp:"crs:CircularGradientBasedCorrections"`
 	PaintBasedCorrections                 CorrectionList  `xmp:"crs:PaintBasedCorrections"`
 	RetouchAreas                          RetouchAreaList `xmp:"crs:RetouchAreas"`

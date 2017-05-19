@@ -21,9 +21,9 @@ import (
 
 type Document struct {
 	// name and version of the toolkit that generated an XMP document instance
-	Toolkit string `xml:"-"  json:"-"`
+	toolkit string
 
-	Nodes NodeList `json:"-"`
+	nodes NodeList
 
 	// flag indicating the document content has changed
 	dirty bool
@@ -41,8 +41,8 @@ type Document struct {
 // high-level XMP document interface
 func NewDocument() *Document {
 	d := &Document{
-		Toolkit:  XMP_TOOLKIT_VERSION,
-		Nodes:    make(NodeList, 0),
+		toolkit:  XMP_TOOLKIT_VERSION,
+		nodes:    make(NodeList, 0),
 		intNsMap: make(map[string]*Namespace),
 		extNsMap: make(map[string]*Namespace),
 	}
@@ -61,56 +61,17 @@ func (d *Document) Close() {
 	if d == nil {
 		return
 	}
-	for _, v := range d.Nodes {
+	for _, v := range d.nodes {
 		v.Close()
 	}
-	d.Nodes = nil
-}
-
-func (d *Document) Merge(b *Document) error {
-	// copy content
-	for _, v := range b.Nodes {
-		ns := v.Namespaces(b)[0]
-		if n := d.FindNode(ns); n != nil {
-			// overwrite the existing model with a deep-copy of the merged model
-			if v.Model != nil {
-				cpyNode := NewNode(emptyName)
-				defer cpyNode.Close()
-				enc := NewEncoder(nil)
-				if err := enc.EncodeElement(v.Model, cpyNode); err != nil {
-					return err
-				}
-				cpyModel := ns.NewModel()
-				dec := NewDecoder(nil)
-				if err := dec.DecodeElement(cpyModel, cpyNode); err != nil {
-					return err
-				}
-				n.Model = cpyModel
-			}
-			// add child nodes and attr
-			n.Nodes = append(n.Nodes, copyNodes(v.Nodes)...)
-			n.Attr = append(n.Attr, v.Attr...)
-		} else {
-			// target node does not yet exist, this is simple
-			d.Nodes.AddNode(copyNode(v))
-		}
-	}
-	// copy namespaces
-	for n, v := range b.intNsMap {
-		d.intNsMap[n] = v
-	}
-	for n, v := range b.extNsMap {
-		d.extNsMap[n] = v
-	}
-	d.SetDirty()
-	return nil
+	d.nodes = nil
 }
 
 func (d *Document) syncFromXMP() error {
 	if !d.dirty {
 		return nil
 	}
-	for _, n := range d.Nodes {
+	for _, n := range d.nodes {
 		if n.Model != nil {
 			if err := n.Model.SyncFromXMP(d); err != nil {
 				return err
@@ -124,7 +85,7 @@ func (d *Document) syncToXMP() error {
 	if !d.dirty {
 		return nil
 	}
-	for _, n := range d.Nodes {
+	for _, n := range d.nodes {
 		if n.Model != nil {
 			if err := n.Model.SyncToXMP(d); err != nil {
 				return err
@@ -145,13 +106,17 @@ func (d *Document) Namespaces() NamespaceList {
 	return l
 }
 
+func (d *Document) Nodes() NodeList {
+	return d.nodes
+}
+
 func (d *Document) FindNode(ns *Namespace) *Node {
-	return d.Nodes.FindNode(ns)
+	return d.nodes.FindNode(ns)
 }
 
 func (d *Document) FindModel(ns *Namespace) Model {
 	prefix := ns.GetName()
-	for _, v := range d.Nodes {
+	for _, v := range d.nodes {
 		if v.Model != nil && v.Model.Can(prefix) {
 			return v.Model
 		}
@@ -178,7 +143,7 @@ func (d *Document) MakeModel(ns *Namespace) (Model, error) {
 		}
 		n := NewNode(ns.XMLName(""))
 		n.Model = m
-		d.Nodes = append(d.Nodes, n)
+		d.nodes = append(d.nodes, n)
 		for _, v := range m.Namespaces() {
 			d.intNsMap[v.GetURI()] = v
 		}
@@ -201,7 +166,7 @@ func (d *Document) AddModel(v Model) (*Node, error) {
 	n := d.FindNode(ns[0])
 	if n == nil {
 		n = NewNode(ns[0].XMLName(""))
-		d.Nodes = append(d.Nodes, n)
+		d.nodes = append(d.nodes, n)
 	}
 	n.Model = v
 	d.SetDirty()
@@ -214,9 +179,9 @@ func (d *Document) RemoveNamespace(ns *Namespace) bool {
 	}
 	name := ns.GetName()
 	removed := false
-	for i, v := range d.Nodes {
+	for i, v := range d.nodes {
 		if v.Name() == name {
-			d.Nodes = append(d.Nodes[:i], d.Nodes[i+1:]...)
+			d.nodes = append(d.nodes[:i], d.nodes[i+1:]...)
 			removed = true
 			delete(d.intNsMap, ns.GetURI())
 			delete(d.extNsMap, ns.GetURI())
@@ -249,7 +214,7 @@ func (d *Document) FilterNamespaces(keep NamespaceList) bool {
 	removed := false
 	allNs := make(NamespaceList, 0)
 	// stage one: collect all top-level namespaces
-	for _, v := range d.Nodes {
+	for _, v := range d.nodes {
 		ns := d.findNsByPrefix(v.Namespace())
 		if ns != nil {
 			allNs = append(allNs, ns)

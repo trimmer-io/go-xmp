@@ -42,10 +42,11 @@ func (d *Document) MarshalJSON() ([]byte, error) {
 	if err := d.syncToXMP(); err != nil {
 		return nil, err
 	}
+	d.dirty = false
 
 	out := &jsonOutDocument{
 		About:      d.about,
-		Toolkit:    d.Toolkit,
+		Toolkit:    d.toolkit,
 		Namespaces: make(map[string]string),
 		Models:     make(map[string]interface{}),
 	}
@@ -62,7 +63,7 @@ func (d *Document) MarshalJSON() ([]byte, error) {
 
 	// 1  build output node tree (model -> nodes+attr with one root node per
 	//    XMP namespace)
-	for _, n := range d.Nodes {
+	for _, n := range d.nodes {
 
 		// 1.1  encode the model (Note: models typically use multiple XMP namespaces)
 		//      so we generate wrapper nodes on the fly
@@ -181,10 +182,10 @@ func nodeToJson(n *Node) (interface{}, error) {
 				// string type: skip outer node and insert ArrayItems
 				var defLangContent string
 				var defLangIndex int = -1
-				a := make([]*ArrayItem, 0)
+				a := make([]*AltItem, 0)
 				for i, vv := range v.Nodes {
 					// string arrays
-					ai := &ArrayItem{
+					ai := &AltItem{
 						Value: vv.Value,
 					}
 					langAttr := vv.GetAttr("", "lang")
@@ -283,9 +284,9 @@ func (d *Document) UnmarshalJSON(data []byte) error {
 	}
 
 	// copy decoded values to document
-	d.Toolkit = dec.toolkit
+	d.toolkit = dec.toolkit
 	d.about = dec.about
-	d.Nodes = dec.nodes
+	d.nodes = dec.nodes
 	d.intNsMap = dec.intNsMap
 	d.extNsMap = dec.extNsMap
 	return d.syncFromXMP()

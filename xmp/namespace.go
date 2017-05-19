@@ -134,7 +134,7 @@ func (n Namespace) Expand(local string) string {
 }
 
 func (n Namespace) Split(name string) string {
-	return dropNsName(name)
+	return stripPrefix(name)
 }
 
 func (n Namespace) GetName() string {
@@ -153,6 +153,13 @@ func (n Namespace) XMLName(local string) xml.Name {
 	return xml.Name{
 		Space: "",
 		Local: n.Expand(local),
+	}
+}
+
+func (n Namespace) RootName() xml.Name {
+	return xml.Name{
+		Space: "",
+		Local: n.Name,
 	}
 }
 
@@ -197,7 +204,7 @@ func (l *NamespaceList) RemoveDups() NamespaceList {
 	return *l
 }
 
-func dropNsName(n string) string {
+func stripPrefix(n string) string {
 	if i := strings.Index(n, ":"); i > -1 {
 		return n[i+1:]
 	}
@@ -209,4 +216,9 @@ func getPrefix(n string) string {
 		return n[:i]
 	}
 	return n
+}
+
+// true when n has a non-empty namespace prefix
+func hasPrefix(n string) bool {
+	return strings.Index(n, ":") > 0
 }

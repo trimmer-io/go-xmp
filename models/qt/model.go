@@ -119,7 +119,7 @@ func (x *QtInfo) SyncFromXMP(d *xmp.Document) error {
 
 func (x QtInfo) SyncToXMP(d *xmp.Document) error {
 	if x.XMP != nil {
-		if err := d.Merge(x.XMP); err != nil {
+		if err := d.Merge(x.XMP, xmp.MERGE); err != nil {
 			return err
 		}
 	}

@@ -137,8 +137,8 @@ func main() {
 			Title:   xmp.NewAltString("demo"),
 			Creator: xmp.NewStringList("Alexander Eichhorn"),
 			Description: xmp.NewAltString(
-				xmp.ArrayItem{Value: "Go-XMP Demo Model", Lang: "en", IsDefault: true},
-				xmp.ArrayItem{Value: "Go-XMP Beispiel Modell", Lang: "de", IsDefault: false},
+				xmp.AltItem{Value: "Go-XMP Demo Model", Lang: "en", IsDefault: true},
+				xmp.AltItem{Value: "Go-XMP Beispiel Modell", Lang: "de", IsDefault: false},
 			),
 		})
 		b = marshal(s)

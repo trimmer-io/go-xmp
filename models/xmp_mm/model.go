@@ -16,7 +16,6 @@
 package xmpmm
 
 import (
-	"encoding/xml"
 	"fmt"
 	"github.com/echa/go-xmp/models/xmp_dm"
 	"github.com/echa/go-xmp/xmp"
@@ -111,12 +110,11 @@ func (x *XmpMM) SetTag(tag, value string) error {
 	return nil
 }
 
-// FIXME: should we copy external namespaces to parent document?
 func (x *XmpMM) AddPantry(d *xmp.Document) {
-	node := xmp.NewNode(xml.Name{Local: "rdf:Description"})
+	node := xmp.NewNode(xmp.NewName("rdf:Description"))
 	cpy := xmp.NewDocument()
-	cpy.Merge(d)
-	node.Nodes = cpy.Nodes
+	cpy.Merge(d, xmp.MERGE)
+	node.Nodes = cpy.Nodes()
 	x.Pantry = append(x.Pantry, (*xmp.Extension)(node))
 }
 

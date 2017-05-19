@@ -85,7 +85,7 @@ func (d *Decoder) Decode(x *Document) error {
 	// 2  skip top-level `x:xmpmeta` (optional) and `rdf:RDF` nodes
 	if root.FullName() == "x:xmpmeta" {
 		if a := root.GetAttr(nsX.GetURI(), "xmptk"); len(a) > 0 {
-			x.Toolkit = strings.TrimSpace(a[0].Value)
+			x.toolkit = strings.TrimSpace(a[0].Value)
 		}
 		if len(root.Nodes) == 0 {
 			return fmt.Errorf("xmp: invalid XML format: missing rdf:RDF node")
@@ -137,9 +137,9 @@ func (d *Decoder) Decode(x *Document) error {
 	}
 
 	// copy decoded values to document
-	x.Toolkit = d.toolkit
+	x.toolkit = d.toolkit
 	x.about = d.about
-	x.Nodes = d.nodes
+	x.nodes = d.nodes
 	x.intNsMap = d.intNsMap
 	x.extNsMap = d.extNsMap
 	return x.syncFromXMP()
@@ -171,7 +171,10 @@ func (d *Decoder) decodeNode(ctx *NodeList, src *Node) error {
 	// capture the node and its children into the selected node
 	if storeNode {
 		src.translate(d)
-		node.AddNode(copyNode(src))
+		if !src.IsZero() {
+			node.AddNode(copyNode(src))
+			Log.Debugf("xmp: missing struct field for %s, saving as external node in %s model", name, node.FullName())
+		}
 	}
 	return nil
 }
@@ -206,7 +209,10 @@ func (d *Decoder) decodeAttribute(ctx *NodeList, src Attr) error {
 	}
 
 	if storeAttr {
-		node.AddAttr(src)
+		if src.Value != "" {
+			Log.Debugf("xmp: missing struct field for %s, saving as unknown attr in %s model", src.Name.Local, node.FullName())
+			node.AddAttr(src)
+		}
 	}
 
 	return nil
@@ -292,14 +298,6 @@ func (d *Decoder) unmarshalAttr(val reflect.Value, finfo *fieldInfo, src Attr) e
 		pv := val.Addr()
 		if pv.CanInterface() && (finfo != nil && finfo.flags&fUnmarshalAttr > 0 || pv.Type().Implements(attrUnmarshalerType)) {
 			return pv.Interface().(UnmarshalerAttr).UnmarshalXMPAttr(d, src)
-		}
-	}
-
-	// Binary
-	if val.CanAddr() {
-		pv := val.Addr()
-		if pv.CanInterface() && (finfo != nil && finfo.flags&fBinaryUnmarshal > 0 || pv.Type().Implements(binaryUnmarshalerType)) {
-			return pv.Interface().(encoding.BinaryUnmarshaler).UnmarshalBinary([]byte(src.Value))
 		}
 	}
 
@@ -476,10 +474,6 @@ func (d *Decoder) lookupNode(ctx *NodeList, name xml.Name) (*Node, error) {
 }
 
 func setValue(dst reflect.Value, src string) error {
-	if len(src) == 0 {
-		return nil
-	}
-
 	dst0 := dst
 	if dst.Kind() == reflect.Ptr {
 		if dst.IsNil() {
