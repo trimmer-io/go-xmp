@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
+	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -33,38 +34,46 @@ import (
 //
 
 type TestStats struct {
-	OrigSizes       []int
-	XmpSizes        []int
-	JsonSizes       []int
-	ReadTimes       []time.Duration
-	JsonTimes       []time.Duration
-	XmpTimes        []time.Duration
-	XmpGzipSizes    []int
-	XmpGzipTimes    []time.Duration
-	JsonGzipSizes   []int
-	JsonGzipTimes   []time.Duration
-	XmpSnappySizes  []int
-	XmpSnappyTimes  []time.Duration
-	JsonSnappySizes []int
-	JsonSnappyTimes []time.Duration
+	OrigSizes         []int
+	XmpSizes          []int
+	JsonSizes         []int
+	ReadTimes         []time.Duration
+	JsonTimes         []time.Duration
+	XmpTimes          []time.Duration
+	XmpGzipSizes      []int
+	XmpGzipTimes      []time.Duration
+	XmpGunzipTimes    []time.Duration
+	JsonGzipSizes     []int
+	JsonGzipTimes     []time.Duration
+	JsonGunzipTimes   []time.Duration
+	XmpSnappySizes    []int
+	XmpSnappyTimes    []time.Duration
+	XmpUnsnappyTimes  []time.Duration
+	JsonSnappySizes   []int
+	JsonSnappyTimes   []time.Duration
+	JsonUnsnappyTimes []time.Duration
 }
 
 func newStats() *TestStats {
 	return &TestStats{
-		OrigSizes:       make([]int, len(testfiles)),
-		XmpSizes:        make([]int, len(testfiles)),
-		JsonSizes:       make([]int, len(testfiles)),
-		ReadTimes:       make([]time.Duration, len(testfiles)),
-		JsonTimes:       make([]time.Duration, len(testfiles)),
-		XmpTimes:        make([]time.Duration, len(testfiles)),
-		XmpGzipSizes:    make([]int, len(testfiles)),
-		XmpGzipTimes:    make([]time.Duration, len(testfiles)),
-		JsonGzipSizes:   make([]int, len(testfiles)),
-		JsonGzipTimes:   make([]time.Duration, len(testfiles)),
-		XmpSnappySizes:  make([]int, len(testfiles)),
-		XmpSnappyTimes:  make([]time.Duration, len(testfiles)),
-		JsonSnappySizes: make([]int, len(testfiles)),
-		JsonSnappyTimes: make([]time.Duration, len(testfiles)),
+		OrigSizes:         make([]int, len(testfiles)),
+		XmpSizes:          make([]int, len(testfiles)),
+		JsonSizes:         make([]int, len(testfiles)),
+		ReadTimes:         make([]time.Duration, len(testfiles)),
+		JsonTimes:         make([]time.Duration, len(testfiles)),
+		XmpTimes:          make([]time.Duration, len(testfiles)),
+		XmpGzipSizes:      make([]int, len(testfiles)),
+		XmpGzipTimes:      make([]time.Duration, len(testfiles)),
+		XmpGunzipTimes:    make([]time.Duration, len(testfiles)),
+		JsonGzipSizes:     make([]int, len(testfiles)),
+		JsonGzipTimes:     make([]time.Duration, len(testfiles)),
+		JsonGunzipTimes:   make([]time.Duration, len(testfiles)),
+		XmpSnappySizes:    make([]int, len(testfiles)),
+		XmpSnappyTimes:    make([]time.Duration, len(testfiles)),
+		XmpUnsnappyTimes:  make([]time.Duration, len(testfiles)),
+		JsonSnappySizes:   make([]int, len(testfiles)),
+		JsonSnappyTimes:   make([]time.Duration, len(testfiles)),
+		JsonUnsnappyTimes: make([]time.Duration, len(testfiles)),
 	}
 }
 
@@ -96,16 +105,20 @@ func TestCompression(T *testing.T) {
 		buf, _ = json.Marshal(doc)
 		st.JsonTimes[i] = time.Since(start)
 		st.JsonSizes[i] = len(buf)
-		st.JsonGzipSizes[i], st.JsonGzipTimes[i] = gz(T, buf)
-		st.JsonSnappySizes[i], st.JsonSnappyTimes[i] = snap(T, buf)
+		buf, st.JsonGzipSizes[i], st.JsonGzipTimes[i] = gz(T, buf)
+		st.JsonGunzipTimes[i] = gunzip(T, buf)
+		buf, st.JsonSnappySizes[i], st.JsonSnappyTimes[i] = snap(T, buf)
+		st.JsonUnsnappyTimes[i] = unsnap(T, buf)
 
 		// XMP target
 		start = time.Now()
 		buf, _ := xmp.Marshal(doc)
 		st.XmpTimes[i] = time.Since(start)
 		st.XmpSizes[i] = len(buf)
-		st.XmpGzipSizes[i], st.XmpGzipTimes[i] = gz(T, buf)
-		st.XmpSnappySizes[i], st.XmpSnappyTimes[i] = snap(T, buf)
+		buf, st.XmpGzipSizes[i], st.XmpGzipTimes[i] = gz(T, buf)
+		st.XmpGunzipTimes[i] = gunzip(T, buf)
+		buf, st.XmpSnappySizes[i], st.XmpSnappyTimes[i] = snap(T, buf)
+		st.XmpUnsnappyTimes[i] = unsnap(T, buf)
 
 		doc.Close()
 	}
@@ -125,9 +138,67 @@ func TestCompression(T *testing.T) {
 	printTimes(T, "XMP->JSON times", st.JsonTimes)
 	printTimes(T, "XMP->XML times", st.XmpTimes)
 	printTimes(T, "XMP Gzip times", st.XmpGzipTimes)
+	printTimes(T, "XMP Gunzip times", st.XmpGunzipTimes)
 	printTimes(T, "XMP Snappy times", st.XmpSnappyTimes)
+	printTimes(T, "XMP Unsnappy times", st.XmpUnsnappyTimes)
 	printTimes(T, "JSON Gzip times", st.JsonGzipTimes)
+	printTimes(T, "JSON Gunzip times", st.JsonGunzipTimes)
 	printTimes(T, "JSON Snappy times", st.JsonSnappyTimes)
+	printTimes(T, "JSON Unsnappy times", st.JsonUnsnappyTimes)
+}
+
+func gz(T *testing.T, b []byte) ([]byte, int, time.Duration) {
+	start := time.Now()
+	var buf bytes.Buffer
+	zw := gzip.NewWriter(&buf)
+	_, err := zw.Write(b)
+	if err != nil {
+		T.Error(err)
+	}
+	if err := zw.Close(); err != nil {
+		T.Error(err)
+	}
+	return buf.Bytes(), buf.Len(), time.Since(start)
+}
+
+func gunzip(T *testing.T, b []byte) time.Duration {
+	start := time.Now()
+	buf := bytes.NewBuffer(b)
+	r, err := gzip.NewReader(buf)
+	if err != nil {
+		T.Error(err)
+	}
+	defer r.Close()
+	_, err = ioutil.ReadAll(r)
+	if err != nil {
+		T.Error(err)
+	}
+	return time.Since(start)
+}
+
+func snap(T *testing.T, b []byte) ([]byte, int, time.Duration) {
+	start := time.Now()
+	var buf bytes.Buffer
+	sw := snappy.NewBufferedWriter(&buf)
+	_, err := sw.Write(b)
+	if err != nil {
+		T.Error(err)
+	}
+	if err := sw.Close(); err != nil {
+		T.Error(err)
+	}
+	return buf.Bytes(), buf.Len(), time.Since(start)
+}
+
+func unsnap(T *testing.T, b []byte) time.Duration {
+	start := time.Now()
+	buf := bytes.NewBuffer(b)
+	r := snappy.NewReader(buf)
+	_, err := ioutil.ReadAll(r)
+	if err != nil {
+		T.Error(err)
+	}
+	return time.Since(start)
 }
 
 func printStats(T *testing.T, s string, v, o []int) {
@@ -152,32 +223,4 @@ func printTimes(T *testing.T, s string, v []time.Duration) {
 	max, _ := val.Max()
 	min, _ := val.Min()
 	T.Logf("%20s %18v %18v %18v", s, time.Duration(mean), time.Duration(min), time.Duration(max))
-}
-
-func gz(T *testing.T, b []byte) (int, time.Duration) {
-	start := time.Now()
-	var buf bytes.Buffer
-	zw := gzip.NewWriter(&buf)
-	_, err := zw.Write(b)
-	if err != nil {
-		T.Error(err)
-	}
-	if err := zw.Close(); err != nil {
-		T.Error(err)
-	}
-	return buf.Len(), time.Since(start)
-}
-
-func snap(T *testing.T, b []byte) (int, time.Duration) {
-	start := time.Now()
-	var buf bytes.Buffer
-	sw := snappy.NewBufferedWriter(&buf)
-	_, err := sw.Write(b)
-	if err != nil {
-		T.Error(err)
-	}
-	if err := sw.Close(); err != nil {
-		T.Error(err)
-	}
-	return buf.Len(), time.Since(start)
 }
