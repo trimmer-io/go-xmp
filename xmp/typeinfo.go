@@ -136,7 +136,7 @@ func getTypeInfo(typ reflect.Type, ns string) (*typeInfo, error) {
 	}
 	tinfo = &typeInfo{}
 	if typ.Kind() != reflect.Struct {
-		return nil, fmt.Errorf("xmp: type %v is not a struct", typ.String())
+		return nil, fmt.Errorf("xmp: type %s is not a struct", typ.String())
 	}
 	n := typ.NumField()
 	for i := 0; i < n; i++ {

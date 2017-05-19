@@ -16,13 +16,16 @@ package xmp
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
+	"sort"
 	"strings"
 )
 
 var (
 	nodePool                             = make(chan *Node, 5000)
 	npAllocs, npFrees, npHits, npReturns int64
+	errNotFound                          = errors.New("not found")
 )
 
 type Node struct {
@@ -40,6 +43,18 @@ type Attr struct {
 
 type AttrList []Attr
 
+func (x AttrList) IsZero() bool {
+	if len(x) == 0 {
+		return true
+	}
+	for _, v := range x {
+		if v.Value != "" {
+			return false
+		}
+	}
+	return true
+}
+
 func (x AttrList) XML() []xml.Attr {
 	l := make([]xml.Attr, len(x))
 	for i, v := range x {
@@ -53,6 +68,12 @@ func (x *AttrList) From(l []xml.Attr) {
 	for i, v := range l {
 		(*x)[i] = Attr(v)
 	}
+}
+
+var EmptyName = xml.Name{}
+
+func NewName(local string) xml.Name {
+	return xml.Name{Local: local}
 }
 
 func NewNode(name xml.Name) *Node {
@@ -100,7 +121,7 @@ func copyNode(x *Node) *Node {
 	n := NewNode(x.XMLName)
 	n.Value = x.Value
 	n.Model = x.Model
-	n.Attr = make([]Attr, 0, len(x.Attr))
+	n.Attr = make([]Attr, len(x.Attr))
 	copy(n.Attr, x.Attr)
 	n.Nodes = copyNodes(x.Nodes)
 	return n
@@ -116,19 +137,27 @@ func copyNodes(x NodeList) NodeList {
 
 type NodeList []*Node
 
-func (x *NodeList) AddNode(n *Node) {
+func (x *NodeList) AddNode(n *Node) *Node {
 	for i, l := 0, len(*x); i < l; i++ {
 		if (*x)[i].XMLName.Local == n.XMLName.Local {
 			(*x)[i] = n
-			return
+			return n
 		}
 	}
-	*x = append(*x, n)
+	return x.AppendNode(n)
 }
 
-func (x *NodeList) FindNode(ns *Namespace) *Node {
-	prefix := ns.GetName()
-	for _, v := range *x {
+func (x *NodeList) AppendNode(n *Node) *Node {
+	*x = append(*x, n)
+	return n
+}
+
+func (n *NodeList) FindNode(ns *Namespace) *Node {
+	return n.FindNodeByName(ns.GetName())
+}
+
+func (n *NodeList) FindNodeByName(prefix string) *Node {
+	for _, v := range *n {
 		if v.Name() == prefix {
 			return v
 		}
@@ -139,45 +168,35 @@ func (x *NodeList) FindNode(ns *Namespace) *Node {
 	return nil
 }
 
-// keep list of nodes unique, overwrite contents when names equal
-func (n *Node) AddNode(x *Node) {
-	if x == n {
-		panic(fmt.Errorf("xmp: node loop detected"))
-	}
-	n.Nodes.AddNode(x)
-}
-
-func (n *Node) AddAttr(attr Attr) {
-	for i, l := 0, len(n.Attr); i < l; i++ {
-		if n.Attr[i].Name.Local == attr.Name.Local {
-			n.Attr[i].Value = attr.Value
-			return
+func (x *NodeList) Index(n *Node) int {
+	for i, v := range *x {
+		if v == n {
+			return i
 		}
 	}
-	n.Attr = append(n.Attr, attr)
+	return -1
 }
 
-// keep list of attributes unique, overwrite value when names equal
-func (n *Node) AddStringAttr(name, value string) {
-	n.AddAttr(Attr{Name: xml.Name{Local: name}, Value: value})
-}
-
-func (n *Node) GetAttr(ns, name string) []Attr {
-	l := make([]Attr, 0)
-	for _, v := range n.Attr {
-		if ns != "" && v.Name.Space != ns {
-			continue
-		}
-		if name != "" && dropNsName(v.Name.Local) != name {
-			continue
-		}
-		l = append(l, v)
+func (x *NodeList) RemoveNode(n *Node) *Node {
+	if idx := x.Index(n); idx > -1 {
+		*x = append((*x)[:idx], (*x)[idx+1:]...)
 	}
-	return l
+	return n
+}
+
+func (n *Node) IsZero() bool {
+	empty := n.Model == nil && n.Value == "" && (len(n.Attr) == 0 || n.Attr.IsZero())
+	if !empty {
+		return false
+	}
+	for _, v := range n.Nodes {
+		empty = empty && v.IsZero()
+	}
+	return empty
 }
 
 func (n *Node) Name() string {
-	return dropNsName(n.XMLName.Local)
+	return stripPrefix(n.XMLName.Local)
 }
 
 func (n *Node) FullName() string {
@@ -193,29 +212,6 @@ func (n *Node) Namespace() string {
 		ns = getPrefix(n.XMLName.Local)
 	}
 	return ns
-}
-
-func (n *Node) IsZero() bool {
-	empty := n.Model == nil && n.Value == "" && len(n.Attr) == 0
-	if !empty {
-		return false
-	}
-	for _, v := range n.Nodes {
-		empty = empty && v.IsZero()
-	}
-	return empty
-}
-
-func (n *Node) translate(d *Decoder) {
-	d.translate(&n.XMLName)
-	// Note: don't use `for .. range` here because it copies
-	// structures, but we intend to alter the node tree
-	for i, l := 0, len(n.Attr); i < l; i++ {
-		d.translate(&n.Attr[i].Name)
-	}
-	for i, l := 0, len(n.Nodes); i < l; i++ {
-		n.Nodes[i].translate(d)
-	}
 }
 
 func (n *Node) Namespaces(d *Document) NamespaceList {
@@ -244,7 +240,6 @@ func (n *Node) Namespaces(d *Document) NamespaceList {
 		l = append(l, v.Namespaces(d)...)
 	}
 
-	// l := make(NamespaceList, 0)
 	for name, _ := range m {
 		ns := d.findNsByPrefix(name)
 		if ns != nil && ns != nsRDF && ns != nsXML {
@@ -254,6 +249,91 @@ func (n *Node) Namespaces(d *Document) NamespaceList {
 
 	// keep unique namespaces only
 	return l.RemoveDups()
+}
+
+// keep list of nodes unique, overwrite contents when names equal
+func (n *Node) AddNode(x *Node) *Node {
+	if x == n {
+		panic(fmt.Errorf("xmp: node loop detected"))
+	}
+	return n.Nodes.AddNode(x)
+}
+
+// append in any case
+func (n *Node) AppendNode(x *Node) *Node {
+	if x == n {
+		panic(fmt.Errorf("xmp: node loop detected"))
+	}
+	return n.Nodes.AppendNode(x)
+}
+
+func (n *Node) Clear() {
+	for _, v := range n.Nodes {
+		v.Close()
+	}
+	n.Nodes = nil
+}
+
+func (n *Node) RemoveNode(x *Node) *Node {
+	if x == n {
+		panic(fmt.Errorf("xmp: node loop detected"))
+	}
+	return n.Nodes.RemoveNode(x)
+}
+
+func (n Node) IsArray() bool {
+	if len(n.Nodes) != 1 {
+		return false
+	}
+	switch n.Nodes[0].FullName() {
+	case "rdf:Seq", "rdf:Bag", "rdf:Alt":
+		return true
+	default:
+		return false
+	}
+}
+
+func (n Node) ArrayType() ArrayType {
+	if len(n.Nodes) == 1 {
+		switch n.Nodes[0].FullName() {
+		case "rdf:Seq":
+			return ArrayTypeOrdered
+		case "rdf:Bag":
+			return ArrayTypeUnordered
+		case "rdf:Alt":
+			return ArrayTypeAlternative
+		}
+	}
+	return ArrayType("")
+}
+
+func (n *Node) AddAttr(attr Attr) {
+	for i, l := 0, len(n.Attr); i < l; i++ {
+		if n.Attr[i].Name.Local == attr.Name.Local {
+			n.Attr[i].Value = attr.Value
+			return
+		}
+	}
+	n.Attr = append(n.Attr, attr)
+}
+
+// keep list of attributes unique, overwrite value when names equal
+func (n *Node) AddStringAttr(name, value string) {
+	n.AddAttr(Attr{Name: xml.Name{Local: name}, Value: value})
+}
+
+func (n *Node) GetAttr(ns, name string) []Attr {
+	l := make([]Attr, 0)
+	for _, v := range n.Attr {
+		if ns != "" && v.Name.Space != ns {
+			continue
+		}
+		if name != "" && stripPrefix(v.Name.Local) != name {
+			continue
+		}
+		l = append(l, v)
+	}
+	return l
 }
 
 func (n *Node) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
@@ -307,4 +387,325 @@ func (n *Node) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 	n.Attr.From(start.Attr)
 	n.Nodes = nodes
 	return nil
+}
+
+func (n *Node) GetPath(path Path) (string, error) {
+	name, path := path.PopFront()
+	name, idx, lang := parsePathSegment(name)
+	if idx < -1 {
+		return "", fmt.Errorf("path field %s: invalid index", name)
+	}
+	// fmt.Printf("Get Node path ns=%s name=%s len=%d rest=%v idx=%d lang=%s\n", path.NamespacePrefix(), name, path.Len(), path, idx, lang)
+	if name == "" && idx == -1 && lang == "" {
+		if path.Len() == 0 {
+			return n.Value, nil
+		}
+		// ignore empty path segments and recurse
+		return n.GetPath(path)
+	}
+
+	// lookup name in node list or attributes
+	node := n.Nodes.FindNodeByName(name)
+	if node != nil {
+		switch {
+		case idx > -1:
+			// drill two levels deep into array nodes bag/seq+li
+			if len(node.Nodes) == 0 || len(node.Nodes[0].Nodes) <= idx {
+				return "", nil
+			}
+			return node.Nodes[0].Nodes[idx].GetPath(path)
+		case lang != "":
+			// drill two levels deep into alt-array nodes alt+li
+			if len(node.Nodes) == 0 || len(node.Nodes[0].Nodes) == 0 {
+				return "", nil
+			}
+			for _, v := range node.Nodes[0].Nodes {
+				attr := v.GetAttr("", "lang")
+				if len(attr) == 0 {
+					continue
+				}
+				if attr[0].Value == string(lang) {
+					return v.Value, nil
+				}
+			}
+			return "", nil
+		default:
+			return node.GetPath(path)
+		}
+	}
+
+	if attr := n.GetAttr("", name); len(attr) > 0 {
+		return attr[0].Value, nil
+	}
+	return "", nil
+}
+
+func (n *Node) SetPath(path Path, value string, flags SyncFlags) error {
+	name, path := path.PopFront()
+	name, idx, lang := parsePathSegment(name)
+	if idx < -1 {
+		return fmt.Errorf("path field %s: invalid index", name)
+	}
+
+	// fmt.Printf("Set Node path ns=%s len=%d, path=%s, name=%s rest=%v idx=%d lang=%s\n", path.NamespacePrefix(), path.Len(), path.String(), name, path, idx, lang)
+	if name == "" && idx == -1 && lang == "" {
+		if path.Len() == 0 {
+			n.Value = value
+		}
+		return nil
+	}
+
+	// handle attribute
+	if attr := n.GetAttr("", name); len(attr) > 0 {
+		switch {
+		case flags&REPLACE > 0 && value != "":
+			attr[0].Value = value
+			return nil
+		case flags&DELETE > 0 && value == "":
+			attr[0].Value = value
+			// will be ignored on next marshal
+			return nil
+		}
+	}
+
+	// handle nodes
+	node := n.Nodes.FindNodeByName(name)
+	if node == nil {
+		if flags&CREATE > 0 && value != "" {
+			node = n.AddNode(NewNode(NewName(path.NamespacePrefix() + ":" + name)))
+		} else {
+			return fmt.Errorf("CREATE flag required to make node '%s'", name)
+		}
+	}
+	switch {
+	case idx > -1 || (node.IsArray() && lang == ""):
+		arr := node.Nodes.FindNodeByName("Seq")
+		if arr == nil {
+			arr = node.Nodes.FindNodeByName("Bag")
+		}
+		if arr == nil && flags&CREATE == 0 {
+			return fmt.Errorf("CREATE flag required to make array '%s'", name)
+		}
+		if arr == nil {
+			arr = node.AddNode(NewNode(NewName("rdf:Seq")))
+		}
+
+		// recurse when we're not at the end of the path
+		if path.Len() > 0 {
+			if idx < 0 {
+				idx = 0
+			}
+			if l := len(arr.Nodes); l <= idx {
+				if flags&(CREATE|APPEND) == 0 && value != "" {
+					return fmt.Errorf("CREATE flag required to extend array '%s'", name)
+				}
+				for ; l <= idx; l++ {
+					arr.AppendNode(NewNode(NewName("rdf:li")))
+				}
+			}
+			return arr.Nodes[idx].SetPath(path, value, flags)
+		}
+
+		// when at end of path flags tell what to do
+		switch {
+		case flags&UNIQUE > 0 && value != "" && idx == -1:
+			// append if not exists
+			for _, v := range arr.Nodes {
+				if v.Value == value {
+					return nil
+				}
+			}
+			li := arr.AppendNode(NewNode(NewName("rdf:li")))
+			li.Value = value
+
+		case flags&APPEND > 0 && value != "" && idx == -1:
+			// always append
+			li := arr.AppendNode(NewNode(NewName("rdf:li")))
+			li.Value = value
+
+		case flags&(REPLACE|CREATE) > 0 && value != "" && idx == -1:
+			// replace the entire xmp array
+			arr.Clear()
+			li := arr.AppendNode(NewNode(NewName("rdf:li")))
+			li.Value = value
+
+		case flags&(REPLACE|CREATE) > 0 && value != "" && idx > -1:
+			// replace a single item, add intermediate index positions
+			if l := len(arr.Nodes); l <= idx {
+				for ; l <= idx; l++ {
+					arr.AppendNode(NewNode(NewName("rdf:li")))
+				}
+			}
+			arr.Nodes[idx].Value = value
+
+		case flags&DELETE > 0 && value == "" && idx == -1:
+			// delete the entire array
+			node.RemoveNode(arr).Close()
+
+		case flags&DELETE > 0 && value == "" && idx > -1:
+			// delete a single item
+			if idx < len(arr.Nodes) {
+				arr.Nodes = append(arr.Nodes[:idx], arr.Nodes[idx+1:]...)
+			}
+		default:
+			return fmt.Errorf("unsupported flag combination %v for %s", flags, name)
+		}
+
+	// AltString array
+	case lang != "":
+		arr := node.Nodes.FindNodeByName("Alt")
+		if arr == nil && flags&(CREATE|APPEND) == 0 {
+			return fmt.Errorf("CREATE flag required to extend array '%s'", name)
+		}
+		if arr == nil {
+			arr = node.AddNode(NewNode(NewName("rdf:Alt")))
+		}
+		switch {
+		case flags&UNIQUE > 0 && value != "":
+			// append source when not exist
+			for _, v := range arr.Nodes {
+				if attr := v.GetAttr("", "lang"); len(attr) > 0 {
+					if attr[0].Value == lang && v.Value == value {
+						return nil
+					}
+				}
+			}
+			li := arr.AppendNode(NewNode(NewName("rdf:li")))
+			li.AddStringAttr("xml:lang", lang)
+			li.Value = value
+
+		case flags&APPEND > 0 && value != "":
+			// append source value
+			li := arr.AppendNode(NewNode(NewName("rdf:li")))
+			li.AddStringAttr("xml:lang", lang)
+			li.Value = value
+
+		case flags&(REPLACE|CREATE) > 0 && value != "" && lang != "":
+			// replace single entry
+			for _, v := range arr.Nodes {
+				if attr := v.GetAttr("", "lang"); len(attr) > 0 {
+					if attr[0].Value == lang {
+						v.Value = value
+						return nil
+					}
+				}
+			}
+
+		case flags&(REPLACE|CREATE) > 0 && value != "" && lang == "":
+			// replace entire AltString with a new version
+			arr.Clear()
+			li := NewNode(NewName("rdf:li"))
+			li.AddStringAttr("xml:lang", lang)
+			li.Value = value
+			arr.Nodes = NodeList{li}
+
+		case flags&DELETE > 0 && value == "" && lang != "":
+			// delete a specific language
+			for _, v := range arr.Nodes {
+				if attr := v.GetAttr("", "lang"); len(attr) > 0 {
+					if attr[0].Value == lang {
+						arr.RemoveNode(v).Close()
+						return nil
+					}
+				}
+			}
+
+		case flags&DELETE > 0 && value == "" && lang == "":
+			// remove and close the entire array
+			node.RemoveNode(arr).Close()
+		default:
+			return fmt.Errorf("unsupported flag combination %v", flags)
+		}
+
+	default:
+		if path.Len() > 0 {
+			return node.SetPath(path, value, flags)
+		}
+		// fmt.Printf("Set Node path ns=%s len=%d, path=%s, name=%s\n", path.NamespacePrefix(), path.Len(), path.String(), name)
+		switch {
+		case flags&(REPLACE|CREATE) > 0 && value != "":
+			node.Value = value
+			return nil
+		case flags&DELETE > 0 && value == "":
+			node.Value = value
+			node.Clear()
+			// will be ignored on next marshal
+			return nil
+		default:
+			return fmt.Errorf("unsupported flag combination %v", flags)
+		}
+	}
+
+	return nil
+}
+
+func (n *Node) ListPaths(path Path) (PathValueList, error) {
+	l := make(PathValueList, 0)
+	switch n.FullName() {
+	case "rdf:Seq", "rdf:Bag":
+		for i, li := range n.Nodes {
+			_, walker := path.Pop()
+			walker = walker.AppendIndex(i)
+			for _, v := range li.Nodes {
+				r, err := v.ListPaths(walker.Push(v.Name()))
+				if err != nil {
+					return nil, err
+				}
+				l = append(l, r...)
+			}
+		}
+	case "rdf:Alt":
+		for _, li := range n.Nodes {
+			lang := "x-default"
+			if attr := li.GetAttr("", "lang"); len(attr) > 0 {
+				lang = attr[0].Value
+			}
+			_, walker := path.Pop()
+			walker = walker.AppendIndexString(lang)
+			l = append(l, PathValue{
+				Path:  walker,
+				Value: li.Value,
+			})
+		}
+	default:
+		for _, a := range n.Attr {
+			if skipField(a.Name) {
+				continue
+			}
+			l = append(l, PathValue{
+				Path:  path.Push(stripPrefix(a.Name.Local)),
+				Value: a.Value,
+			})
+		}
+		for _, v := range n.Nodes {
+			if skipField(v.XMLName) {
+				continue
+			}
+			r, err := v.ListPaths(path.Push(v.Name()))
+			if err != nil {
+				return nil, err
+			}
+			l = append(l, r...)
+		}
+		if n.Value != "" {
+			l = append(l, PathValue{
+				Path:  path,
+				Value: n.Value,
+			})
+		}
+	}
+	sort.Sort(byPath(l))
+	return l, nil
+}
+
+func (n *Node) translate(d *Decoder) {
+	d.translate(&n.XMLName)
+	// Note: don't use `for .. range` here because it copies
+	// structures, but we intend to alter the node tree
+	for i, l := 0, len(n.Attr); i < l; i++ {
+		d.translate(&n.Attr[i].Name)
+	}
+	for i, l := 0, len(n.Nodes); i < l; i++ {
+		n.Nodes[i].translate(d)
+	}
 }

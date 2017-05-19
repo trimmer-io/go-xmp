@@ -35,6 +35,18 @@ func (x *Extension) IsZero() bool {
 	return (*Node)(x).IsZero()
 }
 
+func (x *Extension) FindNodeByName(name string) *Node {
+	for _, n := range x.Nodes {
+		if n.Name() == name {
+			return n
+		}
+		if n.Model != nil && n.Model.Can(name) {
+			return n
+		}
+	}
+	return nil
+}
+
 func (x Extension) MarshalXMP(e *Encoder, node *Node, m Model) error {
 	for _, ext := range x.Nodes {
 		if ext.Model != nil {
@@ -149,9 +161,26 @@ func (x *ExtensionArray) UnmarshalXMP(d *Decoder, node *Node, m Model) error {
 //
 type NamedExtensionArray []*Extension
 
+func (x NamedExtensionArray) Typ() ArrayType {
+	return ArrayTypeUnordered
+}
+
+func (x *NamedExtensionArray) FindNodeByName(name string) *Node {
+	for _, v := range *x {
+		n := (*Node)(v)
+		if n.Name() == name {
+			return n
+		}
+		if n.Model != nil && n.Model.Can(name) {
+			return n
+		}
+	}
+	return nil
+}
+
 func (x NamedExtensionArray) MarshalXMP(e *Encoder, node *Node, m Model) error {
 	for _, v := range x {
-		ext := NewNode(xml.Name{Local: v.XMLName.Local})
+		ext := NewNode(NewName(v.XMLName.Local))
 		ext.AddAttr(rdfResourceAttr)
 		ext.Nodes = append(ext.Nodes, copyNodes(v.Nodes)...)
 		ext.Attr = append(ext.Attr, v.Attr...)
@@ -163,25 +192,10 @@ func (x NamedExtensionArray) MarshalXMP(e *Encoder, node *Node, m Model) error {
 func (x *NamedExtensionArray) UnmarshalXMP(d *Decoder, node *Node, m Model) error {
 	for _, v := range node.Nodes {
 		v.translate(d)
-		ext := (*Extension)(NewNode(xml.Name{Local: v.XMLName.Local}))
+		ext := (*Extension)(NewNode(NewName(v.XMLName.Local)))
 		ext.Nodes = append(ext.Nodes, copyNodes(v.Nodes)...)
 		ext.Attr = append(ext.Attr, v.Attr...)
 		*x = append(*x, ext)
 	}
 	return nil
 }
-
-// func (x NamedExtensionArray) MarshalJSON() ([]byte, error) {
-// 	if len(x) == 0 {
-// 		return []byte("null"), nil
-// 	}
-// 	out := make(map[string]interface{}, len(x))
-// 	for _, v := range x {
-// 		if b, err := json.Marshal(v); err != nil {
-// 			return nil, err
-// 		} else {
-// 			out[v.XMLName.Local] = json.RawMessage(b)
-// 		}
-// 	}
-// 	return json.Marshal(out)
-// }

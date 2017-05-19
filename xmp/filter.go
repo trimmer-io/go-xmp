@@ -16,6 +16,7 @@ package xmp
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 )
 
@@ -145,4 +146,13 @@ func (x Filter) Apply(d *Document) bool {
 		removed = removed || r
 	}
 	return removed
+}
+
+// converter function for Gorilla schema; will become unnecessary once
+// https://github.com/gorilla/schema/issues/57 is fixed
+//
+// register with decoder.RegisterConverter(Filter(""), ConvertFilter)
+func ConvertFilter(value string) reflect.Value {
+	v := ParseFilter(value)
+	return reflect.ValueOf(*v)
 }
