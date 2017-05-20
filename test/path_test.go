@@ -157,7 +157,7 @@ func TestPathGetExtension(T *testing.T) {
 	if l := len(mm.Pantry); l != 1 {
 		T.Errorf("invalid pantry len: expected=1 got=%d", l)
 	}
-	if v, err := d2.GetPath(xmp.Path("xmpMM:Pantry[0]/dc/format")); err != nil {
+	if v, err := d2.GetPath(xmp.Path("xmpMM:Pantry[0]/dc:format")); err != nil {
 		T.Error(err)
 	} else if v != "x" {
 		T.Errorf("invalid result: expected=x got=%s", v)
@@ -275,7 +275,7 @@ func TestPathSetExtension(T *testing.T) {
 		return
 	}
 	mm.AddPantry(d1)
-	p := xmp.Path("xmpMM:Pantry[0]/dc/format")
+	p := xmp.Path("xmpMM:Pantry[0]/dc:format")
 	if err := d2.SetPath(xmp.PathValue{
 		Path:  p,
 		Value: "y",
@@ -292,7 +292,7 @@ func TestPathSetExtension(T *testing.T) {
 
 func TestPathCreateExtension(T *testing.T) {
 	d := xmp.NewDocument()
-	p := xmp.Path("xmpMM:Pantry[0]/dc/format")
+	p := xmp.Path("xmpMM:Pantry[0]/dc:format")
 	if err := d.SetPath(xmp.PathValue{
 		Path:  p,
 		Value: "y",

@@ -196,9 +196,33 @@ func (x Path) PopFront() (string, Path) {
 	case 0:
 		return "", x
 	case 1:
-		return f[0], NewPath(x.NamespacePrefix())
+		seg := f[0]
+		ns := x.NamespacePrefix()
+		if hasPrefix(seg) {
+			ns = getPrefix(seg)
+			seg = stripPrefix(seg)
+		}
+		return seg, NewPath(ns)
 	default:
-		return f[0], NewPath(x.NamespacePrefix(), f[1:]...)
+		seg := f[0]
+		ns := x.NamespacePrefix()
+		if hasPrefix(seg) {
+			ns = getPrefix(seg)
+			seg = stripPrefix(seg)
+		}
+		return seg, NewPath(ns, f[1:]...)
+	}
+}
+
+func (x Path) PeekNamespacePrefix() string {
+	switch f := x.Fields(); len(f) {
+	case 0:
+		return x.NamespacePrefix()
+	default:
+		if hasPrefix(f[0]) {
+			return getPrefix(f[0])
+		}
+		return x.NamespacePrefix()
 	}
 }
 
@@ -309,8 +333,7 @@ func GetModelPath(v Model, path Path) (string, error) {
 					return "", errNotFound
 				}
 				ext := arr[idx]
-				name, walker = walker.PopFront()
-				walker = NewPath(name, walker.Fields()...)
+				name = walker.PeekNamespacePrefix()
 				node := ext.FindNodeByName(name)
 				if node == nil {
 					return "", errNotFound
@@ -425,7 +448,9 @@ func (d *Document) SetPath(desc PathValue) error {
 	}
 	if m == nil {
 		m = ns.NewModel()
-		d.AddModel(m)
+		if m != nil {
+			n, _ = d.AddModel(m)
+		}
 	}
 	if m == nil && n == nil {
 		n = d.nodes.AddNode(NewNode(ns.RootName()))
@@ -549,10 +574,8 @@ func SetModelPath(v Model, path Path, value string, flags SyncFlags) error {
 			switch arr := av.Interface().(type) {
 			case *ExtensionArray:
 				// unwrap extension namespace and keep path remainder
-				name, walker = walker.PopFront()
-				if name != walker.NamespacePrefix() {
-					walker = NewPath(name, walker.Fields()...)
-				}
+				name = walker.PeekNamespacePrefix()
+
 				// sanitize idx (it is -1 when no array index was specified)
 				if idx < 0 {
 					idx = 0
@@ -617,9 +640,6 @@ func SetModelPath(v Model, path Path, value string, flags SyncFlags) error {
 				// Named extensions do not contain models
 				// unwrap extension namespace and keep path remainder
 				name, walker = walker.PopFront()
-				if name != walker.NamespacePrefix() {
-					walker = NewPath(name, walker.Fields()...)
-				}
 				node := arr.FindNodeByName(name)
 				if node == nil {
 					// create new extension node without model
@@ -631,7 +651,7 @@ func SetModelPath(v Model, path Path, value string, flags SyncFlags) error {
 					fv.Set(reflect.Append(fv, reflect.ValueOf(ext)))
 				}
 				// store as child node
-				return node.SetPath(NewPath(name, walker.Fields()...), value, flags)
+				return node.SetPath(walker, value, flags)
 
 			case *AltString:
 				switch {
@@ -946,6 +966,9 @@ func listPaths(val reflect.Value, path Path) (PathValueList, error) {
 		}
 
 		fname := stripPrefix(finfo.name)
+		if hasPrefix(finfo.name) && getPrefix(finfo.name) != path.NamespacePrefix() {
+			fname = finfo.name
+		}
 
 		// Drill into interfaces and pointers.
 		for fv.Kind() == reflect.Interface || fv.Kind() == reflect.Ptr {
@@ -982,13 +1005,13 @@ func listPaths(val reflect.Value, path Path) (PathValueList, error) {
 					if v.XMLName.Local == "" || (*Node)(v).FullName() == "rdf:Description" {
 						for _, child := range v.Nodes {
 							if child.Model != nil {
-								if l, err := listPaths(reflect.ValueOf(child.Model), subpath.Push(child.Name())); err != nil {
+								if l, err := listPaths(reflect.ValueOf(child.Model), subpath); err != nil {
 									return nil, err
 								} else {
 									pvl = append(pvl, l...)
 								}
 							} else {
-								if l, err := child.ListPaths(subpath.Push(child.Name())); err != nil {
+								if l, err := child.ListPaths(subpath); err != nil {
 									return nil, err
 								} else {
 									pvl = append(pvl, l...)
@@ -997,7 +1020,7 @@ func listPaths(val reflect.Value, path Path) (PathValueList, error) {
 						}
 					} else {
 						node := (*Node)(v)
-						if l, err := node.ListPaths(subpath.Push(node.Name())); err != nil {
+						if l, err := node.ListPaths(subpath); err != nil {
 							return nil, err
 						} else {
 							pvl = append(pvl, l...)

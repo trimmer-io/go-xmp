@@ -405,7 +405,7 @@ func (n *Node) GetPath(path Path) (string, error) {
 	}
 
 	// lookup name in node list or attributes
-	node := n.Nodes.FindNodeByName(name)
+	node := n.Nodes.FindNodeByName(stripPrefix(name))
 	if node != nil {
 		switch {
 		case idx > -1:
@@ -434,7 +434,7 @@ func (n *Node) GetPath(path Path) (string, error) {
 		}
 	}
 
-	if attr := n.GetAttr("", name); len(attr) > 0 {
+	if attr := n.GetAttr("", stripPrefix(name)); len(attr) > 0 {
 		return attr[0].Value, nil
 	}
 	return "", nil
@@ -456,7 +456,7 @@ func (n *Node) SetPath(path Path, value string, flags SyncFlags) error {
 	}
 
 	// handle attribute
-	if attr := n.GetAttr("", name); len(attr) > 0 {
+	if attr := n.GetAttr("", stripPrefix(name)); len(attr) > 0 {
 		switch {
 		case flags&REPLACE > 0 && value != "":
 			attr[0].Value = value
@@ -469,10 +469,13 @@ func (n *Node) SetPath(path Path, value string, flags SyncFlags) error {
 	}
 
 	// handle nodes
-	node := n.Nodes.FindNodeByName(name)
+	node := n.Nodes.FindNodeByName(stripPrefix(name))
 	if node == nil {
 		if flags&CREATE > 0 && value != "" {
-			node = n.AddNode(NewNode(NewName(path.NamespacePrefix() + ":" + name)))
+			if name != "" && !hasPrefix(name) {
+				name = path.NamespacePrefix() + ":" + name
+			}
+			node = n.AddNode(NewNode(NewName(name)))
 		} else {
 			return fmt.Errorf("CREATE flag required to make node '%s'", name)
 		}
@@ -647,7 +650,11 @@ func (n *Node) ListPaths(path Path) (PathValueList, error) {
 			_, walker := path.Pop()
 			walker = walker.AppendIndex(i)
 			for _, v := range li.Nodes {
-				r, err := v.ListPaths(walker.Push(v.Name()))
+				name := v.Name()
+				if v.Namespace() != path.NamespacePrefix() {
+					name = v.FullName()
+				}
+				r, err := v.ListPaths(walker.Push(name))
 				if err != nil {
 					return nil, err
 				}
@@ -672,8 +679,12 @@ func (n *Node) ListPaths(path Path) (PathValueList, error) {
 			if skipField(a.Name) {
 				continue
 			}
+			name := a.Name.Local
+			if hasPrefix(name) && getPrefix(name) == path.NamespacePrefix() {
+				name = stripPrefix(name)
+			}
 			l = append(l, PathValue{
-				Path:  path.Push(stripPrefix(a.Name.Local)),
+				Path:  path.Push(name),
 				Value: a.Value,
 			})
 		}
@@ -681,7 +692,11 @@ func (n *Node) ListPaths(path Path) (PathValueList, error) {
 			if skipField(v.XMLName) {
 				continue
 			}
-			r, err := v.ListPaths(path.Push(v.Name()))
+			name := v.Name()
+			if v.Namespace() != path.NamespacePrefix() {
+				name = v.FullName()
+			}
+			r, err := v.ListPaths(path.Push(name))
 			if err != nil {
 				return nil, err
 			}
