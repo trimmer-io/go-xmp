@@ -46,7 +46,7 @@ func TestIncorrectPaths(T *testing.T) {
 		"xmpMM:Ingredients[0][0]", // double array without /
 	} {
 		if _, err := d.GetPath(xmp.Path(v)); err == nil {
-			T.Error("unexpected nil error for case %d", i)
+			T.Errorf("unexpected nil error for case %d", i)
 		}
 	}
 }
