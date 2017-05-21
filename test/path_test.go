@@ -23,6 +23,34 @@ import (
 	"github.com/echa/go-xmp/xmp"
 )
 
+func TestIncorrectPaths(T *testing.T) {
+	d := xmp.NewDocument()
+	dc := &dc.DublinCore{
+		Format: "teststring",
+		Type:   xmp.NewStringArray("one", "two", "three"),
+		Description: xmp.NewAltString(
+			xmp.AltItem{Value: "german", Lang: "de", IsDefault: false},
+			xmp.AltItem{Value: "english", Lang: "en", IsDefault: true},
+		),
+	}
+	d.AddModel(dc)
+	mm := &xmpmm.XmpMM{
+		Ingredients: xmpmm.ResourceRefArray{
+			&xmpmm.ResourceRef{AlternatePaths: xmp.UriArray{xmp.NewUri("x")}},
+		},
+	}
+	d.AddModel(mm)
+	for i, v := range []string{
+		"format",                  // missing namespace
+		"dc/format",               // wrong namespace separator
+		"xmpMM:Ingredients[0][0]", // double array without /
+	} {
+		if _, err := d.GetPath(xmp.Path(v)); err == nil {
+			T.Error("unexpected nil error for case %d", i)
+		}
+	}
+}
+
 func TestPathGet(T *testing.T) {
 	d := xmp.NewDocument()
 	c := &dc.DublinCore{
