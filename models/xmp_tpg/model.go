@@ -54,11 +54,14 @@ func FindModel(d *xmp.Document) *PagedText {
 }
 
 type PagedText struct {
-	Colorants   ColorantArray   `xmp:"xmpTPg:Colorants"`
-	Fonts       FontArray       `xmp:"xmpTPg:Fonts"`
-	MaxPageSize Dimensions      `xmp:"xmpTPg:MaxPageSize"`
-	NPages      int64           `xmp:"xmpTPg:NPages,attr"`
-	PlateNames  xmp.StringArray `xmp:"xmpTPg:PlateNames"`
+	Colorants              ColorantList    `xmp:"xmpTPg:Colorants"`
+	Fonts                  FontArray       `xmp:"xmpTPg:Fonts"`
+	MaxPageSize            Dimensions      `xmp:"xmpTPg:MaxPageSize"`
+	NPages                 int64           `xmp:"xmpTPg:NPages,attr"`
+	PlateNames             xmp.StringArray `xmp:"xmpTPg:PlateNames"`
+	HasVisibleTransparency xmp.Bool        `xmp:"xmpTPg:HasVisibleTransparency"`
+	HasVisibleOverprint    xmp.Bool        `xmp:"xmpTPg:HasVisibleOverprint"`
+	SwatchGroups           SwatchGroupList `xmp:"xmpTPg:SwatchGroups"`
 }
 
 func (x PagedText) Can(nsName string) bool {

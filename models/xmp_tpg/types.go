@@ -152,16 +152,36 @@ const (
 	ColorTypeSpot    ColorType = "SPOT"
 )
 
-type ColorantArray []Colorant
+type ColorantList []Colorant
 
-func (x ColorantArray) Typ() xmp.ArrayType {
+func (x ColorantList) Typ() xmp.ArrayType {
 	return xmp.ArrayTypeOrdered
 }
 
-func (x ColorantArray) MarshalXMP(e *xmp.Encoder, node *xmp.Node, m xmp.Model) error {
+func (x ColorantList) MarshalXMP(e *xmp.Encoder, node *xmp.Node, m xmp.Model) error {
 	return xmp.MarshalArray(e, node, x.Typ(), x)
 }
 
-func (x *ColorantArray) UnmarshalXMP(d *xmp.Decoder, node *xmp.Node, m xmp.Model) error {
+func (x *ColorantList) UnmarshalXMP(d *xmp.Decoder, node *xmp.Node, m xmp.Model) error {
+	return xmp.UnmarshalArray(d, node, x.Typ(), x)
+}
+
+type SwatchGroup struct {
+	GroupName string       `xmp:"xmpG:groupName"`
+	GroupType int          `xmp:"xmpG:groupType"`
+	Colorants ColorantList `xmp:"xmpG:Colorants"`
+}
+
+type SwatchGroupList []SwatchGroup
+
+func (x SwatchGroupList) Typ() xmp.ArrayType {
+	return xmp.ArrayTypeOrdered
+}
+
+func (x SwatchGroupList) MarshalXMP(e *xmp.Encoder, node *xmp.Node, m xmp.Model) error {
+	return xmp.MarshalArray(e, node, x.Typ(), x)
+}
+
+func (x *SwatchGroupList) UnmarshalXMP(d *xmp.Decoder, node *xmp.Node, m xmp.Model) error {
 	return xmp.UnmarshalArray(d, node, x.Typ(), x)
 }
