@@ -73,7 +73,11 @@ func isXmpPacket(b []byte) bool {
 func splitPacket(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	start := bytes.Index(data, packet_start)
 	if start == -1 {
-		return len(data) - len(packet_start), nil, nil
+		ofs := len(data) - len(packet_start)
+		if ofs > 0 {
+			return ofs, nil, nil
+		}
+		return len(data), nil, nil
 	}
 	end := bytes.Index(data[start:], packet_end)
 	last := start + end + len(packet_end) + 6
