@@ -36,6 +36,7 @@ var (
 	fxmp  bool
 	fpath bool
 	forig bool
+	fall  bool
 )
 
 func init() {
@@ -45,6 +46,7 @@ func init() {
 	flag.BoolVar(&fxmp, "xmp", false, "enable XMP output")
 	flag.BoolVar(&fpath, "path", false, "enable XMP/Path output")
 	flag.BoolVar(&forig, "orig", false, "enable original XMP output")
+	flag.BoolVar(&fall, "all", false, "ouput all embedded xmp documents")
 }
 
 func fail(v interface{}) {
@@ -110,6 +112,12 @@ func main() {
 				fail(err)
 			}
 			if err == io.EOF {
+				return
+			}
+			if forig && fall {
+				for _, b := range bb {
+					out(b)
+				}
 				return
 			}
 			b = bb[0]
