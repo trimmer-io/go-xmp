@@ -16,6 +16,7 @@
 package xmpbase
 
 import (
+	"bytes"
 	"github.com/echa/go-xmp/xmp"
 )
 
@@ -89,6 +90,21 @@ func (x *Identifier) UnmarshalXMP(d *xmp.Decoder, node *xmp.Node, m xmp.Model) e
 	}
 	x.ID = id.ID
 	x.Scheme = id.Scheme
+	return nil
+}
+
+func (x Identifier) MarshalText() ([]byte, error) {
+	buf := bytes.Buffer{}
+	if x.Scheme != "" {
+		buf.WriteString(x.Scheme)
+		buf.WriteByte(':')
+	}
+	buf.WriteString(x.ID)
+	return buf.Bytes(), nil
+}
+
+func (x *Identifier) UnmarshalText(data []byte) error {
+	x.ID = string(data)
 	return nil
 }
 

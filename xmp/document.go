@@ -68,9 +68,6 @@ func (d *Document) Close() {
 }
 
 func (d *Document) syncFromXMP() error {
-	if !d.dirty {
-		return nil
-	}
 	for _, n := range d.nodes {
 		if n.Model != nil {
 			if err := n.Model.SyncFromXMP(d); err != nil {
@@ -92,6 +89,7 @@ func (d *Document) syncToXMP() error {
 			}
 		}
 	}
+	d.dirty = false
 	return nil
 }
 

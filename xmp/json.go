@@ -42,7 +42,6 @@ func (d *Document) MarshalJSON() ([]byte, error) {
 	if err := d.syncToXMP(); err != nil {
 		return nil, err
 	}
-	d.dirty = false
 
 	out := &jsonOutDocument{
 		About:      d.about,

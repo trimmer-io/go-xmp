@@ -57,6 +57,19 @@ func (x PathValueList) Find(p Path) *PathValue {
 	return nil
 }
 
+// assumes a sorted list
+func (x PathValueList) Unique() PathValueList {
+	l := make(PathValueList, 0, len(x))
+	var last Path
+	for _, v := range x {
+		if last != v.Path {
+			l = append(l, v)
+			last = v.Path
+		}
+	}
+	return l
+}
+
 func (x PathValueList) Diff(y PathValueList) PathValueList {
 	if len(x) == 0 {
 		return y
@@ -298,7 +311,7 @@ func GetModelPath(v Model, path Path) (string, error) {
 		if (fv.Kind() == reflect.Interface || fv.Kind() == reflect.Ptr) && fv.IsNil() {
 			return "", nil
 		}
-		if finfo.flags&fEmpty == 0 && isEmptyValue(fv) {
+		if finfo.flags&fOmit > 0 || (finfo.flags&fEmpty == 0 && isEmptyValue(fv)) {
 			return "", nil
 		}
 
@@ -584,7 +597,7 @@ func SetModelPath(v Model, path Path, value string, flags SyncFlags) error {
 				// add empty nodes up to idx if necessary
 				if l := len(*arr); l <= idx {
 					if flags&(CREATE|APPEND) == 0 && value != "" {
-						return fmt.Errorf("CREATE flag required to add extension")
+						return fmt.Errorf("CREATE flag required to add extension %s on path %s", name, path)
 					}
 					// grow slice and fill with initialized nodes
 					for ; l <= idx; l++ {
@@ -644,7 +657,7 @@ func SetModelPath(v Model, path Path, value string, flags SyncFlags) error {
 				if node == nil {
 					// create new extension node without model
 					if flags&(CREATE|APPEND) == 0 && value != "" {
-						return fmt.Errorf("CREATE flag required to add extension")
+						return fmt.Errorf("CREATE flag required to add extension %s on path %s", name, path)
 					}
 					node = NewNode(NewName(name))
 					ext := (*Extension)(node)
@@ -658,7 +671,7 @@ func SetModelPath(v Model, path Path, value string, flags SyncFlags) error {
 				case flags&UNIQUE > 0 && value != "":
 					// append source when not exist
 					if !arr.AddUnique(lang, value) {
-						return fmt.Errorf("equal value exists")
+						return fmt.Errorf("equal value exists for %s on path %s", name, path)
 					}
 				case flags&APPEND > 0 && value != "":
 					// append source value
@@ -783,17 +796,18 @@ func SetModelPath(v Model, path Path, value string, flags SyncFlags) error {
 								return err
 							}
 							if value == string(b) {
-								return fmt.Errorf("equal value exists")
+								return fmt.Errorf("equal value exists for %s on path %s", name, path)
 							}
-						}
-						if s, b, err := marshalSimple(v.Type(), v); err != nil {
-							return err
 						} else {
-							if b != nil {
-								s = string(b)
-							}
-							if value == s {
-								return fmt.Errorf("equal value exists")
+							if s, b, err := marshalSimple(v.Type(), v); err != nil {
+								return err
+							} else {
+								if b != nil {
+									s = string(b)
+								}
+								if value == s {
+									return fmt.Errorf("equal value exists for %s on path %s", name, path)
+								}
 							}
 						}
 					}
@@ -906,7 +920,7 @@ func (d *Document) ListPaths() (PathValueList, error) {
 		l = append(l, r...)
 	}
 	sort.Sort(byPath(l))
-	return l, nil
+	return l.Unique(), nil
 }
 
 func ListModelPaths(v Model) (PathValueList, error) {
@@ -951,7 +965,7 @@ func listPaths(val reflect.Value, path Path) (PathValueList, error) {
 			continue
 		}
 
-		if finfo.flags&fEmpty == 0 && isEmptyValue(fv) {
+		if finfo.flags&fOmit > 0 || (finfo.flags&fEmpty == 0 && isEmptyValue(fv)) {
 			continue
 		}
 

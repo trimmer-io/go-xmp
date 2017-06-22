@@ -114,7 +114,7 @@ type ExifInfo struct {
 	// Exif info
 	ExifVersion              string              `exif:"0x9000" xmp:"exif:ExifVersion"`
 	FlashpixVersion          string              `exif:"0xa000" xmp:"exif:FlashpixVersion"`
-	ColorSpace               ColorSpace          `exif:"0xa001" xmp:"exif:ColorSpace"`
+	ColorSpace               ColorSpace          `exif:"0xa001" xmp:"exif:ColorSpace,empty"`
 	ComponentsConfiguration  ComponentArray      `exif:"0x9101" xmp:"exif:ComponentsConfiguration"`
 	CompressedBitsPerPixel   xmp.Rational        `exif:"0x9102" xmp:"exif:CompressedBitsPerPixel"`
 	PixelXDimension          int                 `exif:"0xa002" xmp:"exif:PixelXDimension"`
@@ -131,7 +131,7 @@ type ExifInfo struct {
 	SubSecTimeDigitized      string              `exif:"0x9292" xmp:"exif:SubSecTimeDigitized,omit"`
 	ExposureTime             xmp.Rational        `exif:"0x829a" xmp:"exif:ExposureTime"`
 	FNumber                  xmp.Rational        `exif:"0x829d" xmp:"exif:FNumber"`
-	ExposureProgram          ExposureProgram     `exif:"0x8822" xmp:"exif:ExposureProgram"`
+	ExposureProgram          ExposureProgram     `exif:"0x8822" xmp:"exif:ExposureProgram,empty"`
 	SpectralSensitivity      string              `exif:"0x8824" xmp:"exif:SpectralSensitivity"`
 	OECF                     *OECF               `exif:"0x8828" xmp:"exif:OECF"`
 	ShutterSpeedValue        xmp.Rational        `exif:"0x9201" xmp:"exif:ShutterSpeedValue"`
@@ -140,8 +140,8 @@ type ExifInfo struct {
 	ExposureBiasValue        xmp.Rational        `exif:"0x9204" xmp:"exif:ExposureBiasValue"`
 	MaxApertureValue         xmp.Rational        `exif:"0x9205" xmp:"exif:MaxApertureValue"`
 	SubjectDistance          xmp.Rational        `exif:"0x9206" xmp:"exif:SubjectDistance"`
-	MeteringMode             MeteringMode        `exif:"0x9207" xmp:"exif:MeteringMode"`
-	LightSource              LightSource         `exif:"0x9208" xmp:"exif:LightSource"`
+	MeteringMode             MeteringMode        `exif:"0x9207" xmp:"exif:MeteringMode,empty"`
+	LightSource              LightSource         `exif:"0x9208" xmp:"exif:LightSource,empty"`
 	Flash                    Flash               `exif:"0x9209" xmp:"exif:Flash"`
 	FocalLength              xmp.Rational        `exif:"0x920a" xmp:"exif:FocalLength"`
 	SubjectArea              xmp.IntList         `exif:"0x9214" xmp:"exif:SubjectArea"`
@@ -149,25 +149,25 @@ type ExifInfo struct {
 	SpatialFrequencyResponse *OECF               `exif:"0xa20c" xmp:"exif:SpatialFrequencyResponse"`
 	FocalPlaneXResolution    xmp.Rational        `exif:"0xa20e" xmp:"exif:FocalPlaneXResolution"`
 	FocalPlaneYResolution    xmp.Rational        `exif:"0xa20f" xmp:"exif:FocalPlaneYResolution"`
-	FocalPlaneResolutionUnit tiff.ResolutionUnit `exif:"0xa210" xmp:"exif:FocalPlaneResolutionUnit"`
+	FocalPlaneResolutionUnit tiff.ResolutionUnit `exif:"0xa210" xmp:"exif:FocalPlaneResolutionUnit,empty"`
 	SubjectLocation          xmp.IntList         `exif:"0xa214" xmp:"exif:SubjectLocation"`
 	ExposureIndex            xmp.Rational        `exif:"0xa215" xmp:"exif:ExposureIndex"`
-	SensingMethod            SensingMode         `exif:"0xa217" xmp:"exif:SensingMethod"`
-	FileSource               FileSourceType      `exif:"0xa300" xmp:"exif:FileSource"`
-	SceneType                int                 `exif:"0xa301" xmp:"exif:SceneType"`
+	SensingMethod            SensingMode         `exif:"0xa217" xmp:"exif:SensingMethod,empty"`
+	FileSource               FileSourceType      `exif:"0xa300" xmp:"exif:FileSource,empty"`
+	SceneType                int                 `exif:"0xa301" xmp:"exif:SceneType,empty"`
 	CFAPattern               *CFAPattern         `exif:"0xa302" xmp:"exif:CFAPattern"`
-	CustomRendered           RenderMode          `exif:"0xa401" xmp:"exif:CustomRendered"`
-	ExposureMode             ExposureMode        `exif:"0xa402" xmp:"exif:ExposureMode"`
-	WhiteBalance             WhiteBalanceMode    `exif:"0xa403" xmp:"exif:WhiteBalance"`
+	CustomRendered           RenderMode          `exif:"0xa401" xmp:"exif:CustomRendered,empty"`
+	ExposureMode             ExposureMode        `exif:"0xa402" xmp:"exif:ExposureMode,empty"`
+	WhiteBalance             WhiteBalanceMode    `exif:"0xa403" xmp:"exif:WhiteBalance,empty"`
 	DigitalZoomRatio         xmp.Rational        `exif:"0xa404" xmp:"exif:DigitalZoomRatio"`
 	FocalLengthIn35mmFilm    int                 `exif:"0xa405" xmp:"exif:FocalLengthIn35mmFilm"`
-	SceneCaptureType         SceneCaptureType    `exif:"0xa406" xmp:"exif:SceneCaptureType"`
-	GainControl              GainMode            `exif:"0xa407" xmp:"exif:GainControl"`
-	Contrast                 ContrastMode        `exif:"0xa408" xmp:"exif:Contrast"`
-	Saturation               SaturationMode      `exif:"0xa409" xmp:"exif:Saturation"`
-	Sharpness                SharpnessMode       `exif:"0xa40a" xmp:"exif:Sharpness"`
+	SceneCaptureType         SceneCaptureType    `exif:"0xa406" xmp:"exif:SceneCaptureType,empty"`
+	GainControl              GainMode            `exif:"0xa407" xmp:"exif:GainControl,empty"`
+	Contrast                 ContrastMode        `exif:"0xa408" xmp:"exif:Contrast,empty"`
+	Saturation               SaturationMode      `exif:"0xa409" xmp:"exif:Saturation,empty"`
+	Sharpness                SharpnessMode       `exif:"0xa40a" xmp:"exif:Sharpness,empty"`
 	DeviceSettingDescription DeviceSettings      `exif:"0xa40b" xmp:"exif:DeviceSettingDescription"`
-	SubjectDistanceRange     SubjectDistanceMode `exif:"0xa40c" xmp:"exif:SubjectDistanceRange"`
+	SubjectDistanceRange     SubjectDistanceMode `exif:"0xa40c" xmp:"exif:SubjectDistanceRange,empty"`
 	ImageUniqueID            string              `exif:"0xa420" xmp:"exif:ImageUniqueID"`
 	GPSVersionID             string              `exif:"0x0000" xmp:"exif:GPSVersionID"`
 	GPSLatitudeRef           string              `exif:"0x0001" xmp:"-"` // N, S
@@ -347,6 +347,10 @@ func (x *ExifInfo) SyncToXMP(d *xmp.Document) error {
 	}
 	if x.Software != "" && x.SoftwareXMP.IsZero() {
 		x.SoftwareXMP = xmp.AgentName(x.Software)
+	}
+
+	if len(x.ISOSpeedRatings) > 0 {
+		x.ExPhotographicSensitivity = x.ISOSpeedRatings[0]
 	}
 
 	// convert GPS coordinates

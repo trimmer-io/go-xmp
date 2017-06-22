@@ -146,7 +146,6 @@ func (e *Encoder) Encode(d *Document) error {
 	if err := d.syncToXMP(); err != nil {
 		return err
 	}
-	d.dirty = false
 
 	// reset nodes and map
 	e.root = NewNode(xml.Name{})

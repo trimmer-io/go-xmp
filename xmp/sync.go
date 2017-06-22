@@ -84,7 +84,7 @@ const (
 	UNIQUE                        // list-only: append non-empty unique source value
 	NOFAIL                        // don't fail when state+op+flags don't match
 	DEFAULT = CREATE | REPLACE | DELETE | UNIQUE
-	MERGE   = CREATE | REPLACE | UNIQUE
+	MERGE   = CREATE | REPLACE | UNIQUE | NOFAIL
 )
 
 func ParseSyncFlag(s string) SyncFlags {
@@ -194,10 +194,16 @@ func (d *Document) Sync(sPath, dPath Path, flags SyncFlags, v Model, f Converter
 
 	sValue, err := GetModelPath(sModel, sPath)
 	if err != nil {
+		if flags&NOFAIL > 0 {
+			return nil
+		}
 		return err
 	}
 	dValue, err := GetModelPath(dModel, dPath)
 	if err != nil {
+		if flags&NOFAIL > 0 {
+			return nil
+		}
 		return err
 	}
 
@@ -226,13 +232,13 @@ func (d *Document) Sync(sPath, dPath Path, flags SyncFlags, v Model, f Converter
 		sValue = f(sValue)
 	}
 
-	if err := SetModelPath(dModel, dPath, sValue, flags); err != nil {
+	if err = SetModelPath(dModel, dPath, sValue, flags); err != nil {
+		if flags&NOFAIL > 0 {
+			return nil
+		}
 		return err
 	}
-	if err == nil {
-		d.SetDirty()
-	}
-
+	d.SetDirty()
 	return nil
 }
 
