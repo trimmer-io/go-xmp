@@ -84,7 +84,8 @@ const (
 	UNIQUE                        // list-only: append non-empty unique source value
 	NOFAIL                        // don't fail when state+op+flags don't match
 	DEFAULT = CREATE | REPLACE | DELETE | UNIQUE
-	MERGE   = CREATE | REPLACE | UNIQUE | NOFAIL
+	MERGE   = CREATE | UNIQUE | NOFAIL
+	EXTEND  = CREATE | REPLACE | UNIQUE | NOFAIL
 )
 
 func ParseSyncFlag(s string) SyncFlags {
