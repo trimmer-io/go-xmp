@@ -97,14 +97,6 @@ func GetNativeField(v Model, name string) (string, error) {
 	}
 
 	// Check for text marshaler and marshal as node value
-	if fv.CanInterface() && (finfo != nil && finfo.flags&fTextMarshal > 0 || typ.Implements(textMarshalerType)) {
-		b, err := fv.Interface().(encoding.TextMarshaler).MarshalText()
-		if err != nil || b == nil {
-			return "", err
-		}
-		return string(b), nil
-	}
-
 	if fv.CanAddr() {
 		pv := fv.Addr()
 		if pv.CanInterface() && (finfo != nil && finfo.flags&fTextMarshal > 0 || pv.Type().Implements(textMarshalerType)) {
@@ -114,6 +106,14 @@ func GetNativeField(v Model, name string) (string, error) {
 			}
 			return string(b), nil
 		}
+	}
+
+	if fv.CanInterface() && (finfo != nil && finfo.flags&fTextMarshal > 0 || typ.Implements(textMarshalerType)) {
+		b, err := fv.Interface().(encoding.TextMarshaler).MarshalText()
+		if err != nil || b == nil {
+			return "", err
+		}
+		return string(b), nil
 	}
 
 	// simple values are just fine, but any other type (slice, array, struct)
@@ -151,10 +151,6 @@ func SetNativeField(v Model, name, value string) error {
 	f = derefValue(f)
 
 	// try unmarshalers
-	if f.CanInterface() && (finfo != nil && finfo.flags&fBinaryUnmarshal > 0 || f.Type().Implements(binaryUnmarshalerType)) {
-		return f.Interface().(encoding.BinaryUnmarshaler).UnmarshalBinary([]byte(value))
-	}
-
 	if f.CanAddr() {
 		pv := f.Addr()
 		if pv.CanInterface() && (finfo != nil && finfo.flags&fBinaryUnmarshal > 0 || pv.Type().Implements(binaryUnmarshalerType)) {
@@ -162,8 +158,8 @@ func SetNativeField(v Model, name, value string) error {
 		}
 	}
 
-	if f.CanInterface() && (finfo != nil && finfo.flags&fTextUnmarshal > 0 || f.Type().Implements(textUnmarshalerType)) {
-		return f.Interface().(encoding.TextUnmarshaler).UnmarshalText([]byte(value))
+	if f.CanInterface() && (finfo != nil && finfo.flags&fBinaryUnmarshal > 0 || f.Type().Implements(binaryUnmarshalerType)) {
+		return f.Interface().(encoding.BinaryUnmarshaler).UnmarshalBinary([]byte(value))
 	}
 
 	if f.CanAddr() {
@@ -171,6 +167,10 @@ func SetNativeField(v Model, name, value string) error {
 		if pv.CanInterface() && (finfo != nil && finfo.flags&fTextUnmarshal > 0 || pv.Type().Implements(textUnmarshalerType)) {
 			return pv.Interface().(encoding.TextUnmarshaler).UnmarshalText([]byte(value))
 		}
+	}
+
+	if f.CanInterface() && (finfo != nil && finfo.flags&fTextUnmarshal > 0 || f.Type().Implements(textUnmarshalerType)) {
+		return f.Interface().(encoding.TextUnmarshaler).UnmarshalText([]byte(value))
 	}
 
 	// otherwise set simple field value directly or fail
