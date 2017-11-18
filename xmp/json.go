@@ -62,7 +62,6 @@ func (d *Document) MarshalJSON() ([]byte, error) {
 	// 1  build output node tree (model -> nodes+attr with one root node per
 	//    XMP namespace)
 	for _, n := range d.nodes {
-
 		// 1.1  encode the model (Note: models typically use multiple XMP namespaces)
 		//      so we generate wrapper nodes on the fly
 		if n.Model != nil {

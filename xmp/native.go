@@ -259,7 +259,6 @@ func ListNativeFields(v Model) (TagList, error) {
 
 	// go through all fields
 	for _, finfo := range tinfo.fields {
-
 		fv := finfo.value(val)
 
 		if !fv.IsValid() {
@@ -351,9 +350,7 @@ func ListNativeFields(v Model) (TagList, error) {
 }
 
 func findField(val reflect.Value, name, ns string) (*fieldInfo, error) {
-
 	typ := val.Type()
-
 	tinfo, err := getTypeInfo(typ, ns)
 	if err != nil {
 		return nil, err
@@ -363,7 +360,6 @@ func findField(val reflect.Value, name, ns string) (*fieldInfo, error) {
 	var finfo *fieldInfo
 	any := -1
 	for i, v := range tinfo.fields {
-
 		// version must always match
 		// if !d.version.Between(v.minVersion, v.maxVersion) {
 		// 	continue
