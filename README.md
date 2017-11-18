@@ -52,7 +52,7 @@ Features
 Documentation
 -------------
 
-- [API Reference](http://godoc.org/github.com/trimmer-io/go-xmp)
+- [API Reference](http://godoc.org/trimmer.io/go-xmp/xmp)
 - [FAQ](https://github.com/trimmer-io/go-xmp/wiki/FAQ)
 
 Installation
