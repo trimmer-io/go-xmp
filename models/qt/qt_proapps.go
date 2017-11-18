@@ -16,7 +16,7 @@ package qt
 
 import (
 	"fmt"
-	"github.com/echa/go-xmp/xmp"
+	"trimmer.io/go-xmp/xmp"
 )
 
 type QtProApps struct {

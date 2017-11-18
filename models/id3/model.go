@@ -34,11 +34,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/echa/go-xmp/models/dc"
-	"github.com/echa/go-xmp/models/xmp_base"
-	"github.com/echa/go-xmp/models/xmp_dm"
-	"github.com/echa/go-xmp/models/xmp_rights"
-	"github.com/echa/go-xmp/xmp"
+	"trimmer.io/go-xmp/models/dc"
+	"trimmer.io/go-xmp/models/xmp_base"
+	"trimmer.io/go-xmp/models/xmp_dm"
+	"trimmer.io/go-xmp/models/xmp_rights"
+	"trimmer.io/go-xmp/xmp"
 )
 
 var (

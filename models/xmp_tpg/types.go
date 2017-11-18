@@ -17,7 +17,7 @@
 package xmptpg
 
 import (
-	"github.com/echa/go-xmp/xmp"
+	"trimmer.io/go-xmp/xmp"
 )
 
 // Part 2: 1.2.2.2 Dimensions

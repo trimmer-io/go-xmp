@@ -17,8 +17,8 @@ package xmpdm
 
 import (
 	"fmt"
-	"github.com/echa/go-xmp/models/xmp_tpg"
-	"github.com/echa/go-xmp/xmp"
+	"trimmer.io/go-xmp/models/xmp_tpg"
+	"trimmer.io/go-xmp/xmp"
 )
 
 var (

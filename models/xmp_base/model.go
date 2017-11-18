@@ -17,8 +17,8 @@ package xmpbase
 
 import (
 	"fmt"
-	"github.com/echa/go-xmp/xmp"
 	"strings"
+	"trimmer.io/go-xmp/xmp"
 )
 
 var (

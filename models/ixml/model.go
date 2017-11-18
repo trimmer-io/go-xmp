@@ -32,8 +32,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/echa/go-xmp/models/xmp_dm"
-	"github.com/echa/go-xmp/xmp"
+	"trimmer.io/go-xmp/models/xmp_dm"
+	"trimmer.io/go-xmp/xmp"
 )
 
 const ixmlVersion = "2.0"

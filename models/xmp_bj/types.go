@@ -16,7 +16,7 @@
 package xmpbj
 
 import (
-	"github.com/echa/go-xmp/xmp"
+	"trimmer.io/go-xmp/xmp"
 )
 
 // Part 2: 1.2.5.1 Job

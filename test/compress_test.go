@@ -26,8 +26,8 @@ import (
 	"github.com/golang/snappy"
 	"github.com/montanaflynn/stats"
 
-	_ "github.com/echa/go-xmp/models"
-	"github.com/echa/go-xmp/xmp"
+	_ "trimmer.io/go-xmp/models"
+	"trimmer.io/go-xmp/xmp"
 )
 
 // Compression tests

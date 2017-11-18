@@ -29,8 +29,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/echa/go-xmp/models/xmp_dm"
-	"github.com/echa/go-xmp/xmp"
+	"trimmer.io/go-xmp/models/xmp_dm"
+	"trimmer.io/go-xmp/xmp"
 )
 
 const (

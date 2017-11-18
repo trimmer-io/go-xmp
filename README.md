@@ -1,8 +1,8 @@
 go-xmp
 ===========
 
-[![Build Status](https://travis-ci.org/echa/go-xmp.svg?branch=master)](https://travis-ci.org/echa/go-xmp)
-[![GoDoc](https://godoc.org/github.com/echa/go-xmp?status.svg)](https://godoc.org/github.com/echa/go-xmp/xmp)
+[![Build Status](https://travis-ci.org/trimmer-io/go-xmp.svg?branch=master)](https://travis-ci.org/trimmer-io/go-xmp)
+[![GoDoc](https://godoc.org/github.com/trimmer-io/go-xmp?status.svg)](https://godoc.org/github.com/trimmer-io/go-xmp/xmp)
 
 
 go-xmp is a native [Go](http://golang.org/) SDK for the [Extensible Metadata Platform](http://www.adobe.com/devnet/xmp.html) (XMP) as defined by the Adobe XMP Specification [Part 1](http://wwwimages.adobe.com/content/dam/Adobe/en/devnet/xmp/pdfs/XMP%20SDK%20Release%20cc-2016-08/XMPSpecificationPart1.pdf), [Part 2](http://wwwimages.adobe.com/content/dam/Adobe/en/devnet/xmp/pdfs/XMP%20SDK%20Release%20cc-2016-08/XMPSpecificationPart2.pdf) and [Part 3](http://wwwimages.adobe.com/content/dam/Adobe/en/devnet/xmp/pdfs/XMP%20SDK%20Release%20cc-2016-08/XMPSpecificationPart3.pdf), a.k.a ISO 16684-1:2011(E).
@@ -52,15 +52,15 @@ Features
 Documentation
 -------------
 
-- [API Reference](http://godoc.org/github.com/echa/go-xmp)
-- [FAQ](https://github.com/echa/go-xmp/wiki/FAQ)
+- [API Reference](http://godoc.org/github.com/trimmer-io/go-xmp)
+- [FAQ](https://github.com/trimmer-io/go-xmp/wiki/FAQ)
 
 Installation
 ------------
 
 Install go-xmp using the "go get" command:
 
-    go get github.com/echa/go-xmp
+    go get trimmer.io/go-xmp
 
 The Go distribution is go-xmp's only dependency.
 
@@ -107,7 +107,7 @@ Size matters when storing XMP in a database or sending documents over a network.
 Contributing
 ------------
 
-See [CONTRIBUTING.md](https://github.com/echa/go-xmp/blob/master/.github/CONTRIBUTING.md).
+See [CONTRIBUTING.md](https://github.com/trimmer-io/go-xmp/blob/master/.github/CONTRIBUTING.md).
 
 
 License

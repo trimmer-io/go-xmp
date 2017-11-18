@@ -16,7 +16,7 @@
 package dc
 
 import (
-	"github.com/echa/go-xmp/xmp"
+	"trimmer.io/go-xmp/xmp"
 )
 
 type DataType string

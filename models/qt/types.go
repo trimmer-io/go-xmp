@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/echa/go-xmp/xmp"
+	"trimmer.io/go-xmp/xmp"
 )
 
 type LocationRole int

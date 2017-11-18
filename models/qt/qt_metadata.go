@@ -19,8 +19,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/echa/go-xmp/models/tiff"
-	"github.com/echa/go-xmp/xmp"
+	"trimmer.io/go-xmp/models/tiff"
+	"trimmer.io/go-xmp/xmp"
 )
 
 // QuickTime Metadata Keys written by the "mdta" handler using Reverse DNS names.

@@ -19,12 +19,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/echa/go-xmp/xmp"
 	"math"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+	"trimmer.io/go-xmp/xmp"
 )
 
 // 1.2.3.1 Part

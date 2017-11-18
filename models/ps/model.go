@@ -20,7 +20,7 @@ package ps
 
 import (
 	"fmt"
-	"github.com/echa/go-xmp/xmp"
+	"trimmer.io/go-xmp/xmp"
 )
 
 var (
