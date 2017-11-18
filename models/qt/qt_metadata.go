@@ -39,7 +39,6 @@ import (
 // Direction: degree offset from magnetic north
 //
 type QtMetadata struct {
-
 	// official metadata keys as defined in MacOS 10.11 SDK
 	Album                  string         `qt:"com.apple.quicktime.album"                                 qt:"©alb"      xmp:"qt:Album"`
 	Arranger               string         `qt:"com.apple.quicktime.arranger"                              qt:"©arg"      xmp:"qt:Arranger"`

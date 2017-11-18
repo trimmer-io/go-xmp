@@ -157,7 +157,6 @@ func (e *Encoder) Encode(d *Document) error {
 	// 1  build output node tree (model -> nodes+attr with one root node per
 	//    XMP namespace)
 	for _, n := range d.nodes {
-
 		// 1.1  encode the model (Note: models typically use multiple XMP namespaces)
 		//      so we generate wrapper nodes on the fly
 		if n.Model != nil {
@@ -279,7 +278,6 @@ func (e *Encoder) EncodeElement(v interface{}, node *Node) error {
 }
 
 func (e *Encoder) marshalValue(val reflect.Value, finfo *fieldInfo, node *Node, withWrapper bool) error {
-
 	// name := "-"
 	// if finfo != nil {
 	// 	name = finfo.name
@@ -382,7 +380,6 @@ func (e *Encoder) marshalValue(val reflect.Value, finfo *fieldInfo, node *Node, 
 
 	// encode struct attributes
 	for _, finfo := range tinfo.fields {
-
 		if finfo.flags&fOmit > 0 {
 			continue
 		}
@@ -435,7 +432,6 @@ func (e *Encoder) marshalValue(val reflect.Value, finfo *fieldInfo, node *Node, 
 	// encode struct fields
 	var haveField bool
 	for _, finfo := range tinfo.fields {
-
 		if finfo.flags&fOmit > 0 {
 			continue
 		}

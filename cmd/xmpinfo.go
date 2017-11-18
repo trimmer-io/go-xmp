@@ -124,7 +124,6 @@ func main() {
 		}
 
 	} else {
-
 		// fill the document with some info
 		s := xmp.NewDocument()
 		s.AddModel(&xmpbase.XmpBase{

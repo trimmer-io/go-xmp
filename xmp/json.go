@@ -37,7 +37,6 @@ type jsonOutDocument struct {
 }
 
 func (d *Document) MarshalJSON() ([]byte, error) {
-
 	// sync individual models to establish correct XMP entries
 	if err := d.syncToXMP(); err != nil {
 		return nil, err
@@ -123,7 +122,6 @@ func (d *Document) MarshalJSON() ([]byte, error) {
 }
 
 func nodeToJson(n *Node) (interface{}, error) {
-
 	// process value leaf nodes (Note: value and model are mutually exclusive)
 	if n.Value != "" {
 		return &n.Value, nil
@@ -231,7 +229,6 @@ func nodeToJson(n *Node) (interface{}, error) {
 // namespace lookups we cannot use node attributes, because attribute unmarshal
 // will fail for all unknown namespaces.
 func (d *Document) UnmarshalJSON(data []byte) error {
-
 	in := &jsonDocument{
 		Namespaces: make(map[string]string),
 		Models:     make(map[string]json.RawMessage),

@@ -589,7 +589,6 @@ func MarshalArray(e *Encoder, node *Node, typ ArrayType, items interface{}) erro
 				return err
 			}
 		} else {
-
 			// write to stream
 			if err := e.EncodeElement(v, elem); err != nil {
 				return err
@@ -601,7 +600,6 @@ func MarshalArray(e *Encoder, node *Node, typ ArrayType, items interface{}) erro
 }
 
 func UnmarshalArray(d *Decoder, node *Node, typ ArrayType, out interface{}) error {
-
 	sliceValue := reflect.Indirect(reflect.ValueOf(out))
 	itemType := sliceValue.Type().Elem()
 

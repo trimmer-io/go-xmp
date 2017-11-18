@@ -149,7 +149,6 @@ func (d *Document) SyncMulti(desc SyncDescList, m Model) error {
 }
 
 func (d *Document) Sync(sPath, dPath Path, flags SyncFlags, v Model, f ConverterFunc) error {
-
 	// use default flags when zero
 	if flags == 0 {
 		flags = DEFAULT

@@ -219,7 +219,6 @@ func (d *Decoder) decodeAttribute(ctx *NodeList, src Attr) error {
 }
 
 func (d *Decoder) unmarshal(val reflect.Value, finfo *fieldInfo, src *Node) error {
-
 	// Load value from interface, but only if the result will be
 	// usefully addressable.
 	val = derefValue(val)
@@ -409,7 +408,6 @@ func (d *Decoder) findStructField(val reflect.Value, name string) (*fieldInfo, r
 	any := -1
 	// pick the correct field based on name, flags and version
 	for i, v := range tinfo.fields {
-
 		// version must always match
 		if !d.version.Between(v.minVersion, v.maxVersion) {
 			continue

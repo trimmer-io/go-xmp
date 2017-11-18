@@ -26,7 +26,6 @@ import (
 //
 // https://developer.apple.com/library/content/documentation/QuickTime/QTFF/QTFFChap2/qtff2.html
 type QtUserdata struct {
-
 	// Quicktime tags exported on MacOS 10.11 SDK (some also used by iTunes)
 	Album                string    `qt:"©alb" xmp:"qt:Album"`                // QT, iTunes
 	Arranger             string    `qt:"©arg" xmp:"qt:Arranger"`             // QT, iTunes

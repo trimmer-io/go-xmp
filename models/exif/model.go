@@ -325,7 +325,6 @@ func (x *ExifInfo) SyncFromXMP(d *xmp.Document) error {
 }
 
 func (x *ExifInfo) SyncToXMP(d *xmp.Document) error {
-
 	// convert dates, text and GPS properties, ignore errors
 	if !x.DateTimeOriginal.IsZero() {
 		x.DateTimeOriginalXMP, _ = convertDateToXMP(x.DateTimeOriginal, x.SubSecTimeOriginal)
