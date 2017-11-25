@@ -279,9 +279,7 @@ func (d *Document) GetPath(path Path) (string, error) {
 }
 
 func GetModelPath(v Model, path Path) (string, error) {
-
 	val := derefIndirect(v)
-
 	l := path.Len()
 	for n, walker := path.PopFront(); n != ""; n, walker = walker.PopFront() {
 		// fmt.Printf("%d name=%s walker=%s\n", l-walker.Len(), n, walker.String())
@@ -294,11 +292,6 @@ func GetModelPath(v Model, path Path) (string, error) {
 		if err != nil {
 			return "", errNotFound
 			// return "", fmt.Errorf("path field %d (%s) not found: %v", i, name, err)
-		}
-
-		// ignore `any` fields
-		if finfo.flags&fAny > 0 {
-			return "", nil
 		}
 
 		fv := finfo.value(val)
@@ -413,6 +406,21 @@ func GetModelPath(v Model, path Path) (string, error) {
 				return "", err
 			}
 			return string(b), nil
+		}
+
+		// handle maps
+		if fv.Kind() == reflect.Map {
+			if finfo.flags&fFlat == 0 {
+				n, walker = walker.PopFront()
+				name, _, _ = parsePathSegment(n)
+			}
+			val := fv.MapIndex(reflect.ValueOf(name))
+			if !val.IsValid() {
+				return "", errNotFound
+			}
+			// process as simple value below
+			fv = val
+			typ = val.Type()
 		}
 
 		// simple values are just fine, but any other type (slice, array, struct)
@@ -557,11 +565,6 @@ func SetModelPath(v Model, path Path, value string, flags SyncFlags) error {
 			return errNotFound
 		}
 
-		// ignore `any` fields
-		// if finfo.flags&fAny > 0 {
-		// 	return nil
-		// }
-
 		// allocate memory for pointer values in structs
 		fv := finfo.value(val)
 		if !fv.IsValid() {
@@ -575,6 +578,69 @@ func SetModelPath(v Model, path Path, value string, flags SyncFlags) error {
 		// continue loop when field is a struct and we're not at the end
 		if fv.Kind() == reflect.Struct && walker.Len() > 0 {
 			val = fv
+			continue
+		}
+
+		// handle maps
+		if fv.Kind() == reflect.Map {
+			// use proper name depending on flattening
+			if finfo.flags&fFlat == 0 {
+				n, walker = walker.PopFront()
+				name, _, _ = parsePathSegment(n)
+			}
+
+			t := fv.Type()
+			if fv.IsNil() {
+				fv.Set(reflect.MakeMap(t))
+			}
+			switch t.Key().Kind() {
+			case reflect.String:
+			default:
+				return fmt.Errorf("map key type must be string")
+			}
+
+			switch {
+			case flags&DELETE > 0 && value == "":
+				// remove map value
+				fv.SetMapIndex(reflect.ValueOf(name), reflect.Zero(t.Elem()))
+				return nil
+			case flags&(REPLACE|CREATE) > 0 && value != "":
+				// set map value
+				switch t.Elem().Kind() {
+				case reflect.String:
+					fv.SetMapIndex(reflect.ValueOf(name), reflect.ValueOf(value).Convert(t.Elem()))
+				case reflect.Struct:
+					val = reflect.New(t.Elem()).Elem()
+					// FIXME: this recursion may not work as expected because the map
+					// value is not updated when set later on
+					fv.SetMapIndex(reflect.ValueOf(name), val)
+					continue
+				default:
+					// FIXME: this does not allow for struct pointers as map values
+					mval := reflect.New(t.Elem()).Elem()
+					if mval.Type().Kind() == reflect.Ptr && mval.IsNil() && mval.CanSet() {
+						mval.Set(reflect.New(mval.Type().Elem()))
+					}
+					if mval.CanInterface() && mval.Type().Implements(textUnmarshalerType) {
+						if err := mval.Interface().(encoding.TextUnmarshaler).UnmarshalText([]byte(value)); err != nil {
+							return err
+						}
+					} else if mval.CanAddr() {
+						pv := mval.Addr()
+						if pv.CanInterface() && pv.Type().Implements(textUnmarshalerType) {
+							if err := pv.Interface().(encoding.TextUnmarshaler).UnmarshalText([]byte(value)); err != nil {
+								return err
+							}
+						}
+					} else {
+						if err := setValue(mval, value); err != nil {
+							return err
+						}
+					}
+					fv.SetMapIndex(reflect.ValueOf(name), mval)
+					return nil
+				}
+			}
 			continue
 		}
 
@@ -889,6 +955,11 @@ func SetModelPath(v Model, path Path, value string, flags SyncFlags) error {
 			}
 		}
 
+		// for simple values, check current value before replacing
+		if flags&REPLACE == 0 && value != "" && !isEmptyValue(fv) {
+			return fmt.Errorf("REPLACE flag required for overwriting value at %s on path %s", name, path)
+		}
+
 		// Text
 		if fv.CanAddr() {
 			pv := fv.Addr()
@@ -928,7 +999,6 @@ func ListModelPaths(v Model) (PathValueList, error) {
 }
 
 func listPaths(val reflect.Value, path Path) (PathValueList, error) {
-
 	if !val.IsValid() {
 		return nil, nil
 	}
@@ -954,7 +1024,6 @@ func listPaths(val reflect.Value, path Path) (PathValueList, error) {
 
 	// walk all fields
 	for _, finfo := range tinfo.fields {
-
 		fv := finfo.value(val)
 
 		if !fv.IsValid() {
@@ -1133,6 +1202,34 @@ func listPaths(val reflect.Value, path Path) (PathValueList, error) {
 				return nil, err
 			}
 			pvl = append(pvl, l...)
+			continue
+		}
+
+		// handle maps
+		if fv.Kind() == reflect.Map {
+			for _, key := range fv.MapKeys() {
+				// need a string representation of key and value here
+				val := fv.MapIndex(key)
+				ks, kb, kerr := marshalSimple(key.Type(), key)
+				if kerr != nil {
+					return nil, kerr
+				}
+				vs, vb, verr := marshalSimple(val.Type(), val)
+				if verr != nil {
+					return nil, verr
+				}
+				if kb != nil {
+					ks = string(kb)
+				}
+				if vb != nil {
+					vs = string(vb)
+				}
+				if finfo.flags&fFlat == 0 {
+					pvl.Add(path.Push(fname, ks), vs)
+				} else {
+					pvl.Add(path.Push(ks), vs)
+				}
+			}
 			continue
 		}
 
