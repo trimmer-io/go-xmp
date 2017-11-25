@@ -413,6 +413,30 @@ func TestPathReplace(T *testing.T) {
 	}
 }
 
+func TestPathReplaceLong(T *testing.T) {
+	d := xmp.NewDocument()
+	mm := &xmpmm.XmpMM{
+		Versions: xmpmm.StVersionArray{
+			&xmpmm.StVersion{
+				Event: xmpmm.ResourceEvent{
+					Parameters: "testA",
+				},
+			},
+		},
+	}
+	d.AddModel(mm)
+	if err := d.SetPath(xmp.PathValue{
+		Path:  xmp.Path("xmpMM:Versions[0]/stVer:event/parameters"),
+		Value: "testB",
+		Flags: xmp.REPLACE,
+	}); err != nil {
+		T.Errorf("path set failed: %v", err)
+	}
+	if v := mm.Versions[0].Event.Parameters; v != "testB" {
+		T.Errorf("invalid result: expected=new got=%s", v)
+	}
+}
+
 func TestPathNotReplace(T *testing.T) {
 	d := xmp.NewDocument()
 	c := &dc.DublinCore{
