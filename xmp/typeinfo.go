@@ -50,6 +50,9 @@ func (f fieldInfo) String() string {
 	if f.flags&fAny > 0 {
 		s = append(s, "Any")
 	}
+	if f.flags&fFlat > 0 {
+		s = append(s, "Flat")
+	}
 	if f.flags&fArray > 0 {
 		s = append(s, "Array")
 	}
@@ -82,6 +85,7 @@ const (
 	fEmpty
 	fOmit
 	fAny
+	fFlat
 	fArray
 	fBinaryMarshal
 	fBinaryUnmarshal
@@ -91,7 +95,7 @@ const (
 	fUnmarshal
 	fMarshalAttr
 	fUnmarshalAttr
-	fMode = fElement | fAttr | fEmpty | fOmit | fAny | fArray | fBinaryMarshal | fBinaryUnmarshal | fTextMarshal | fTextUnmarshal | fMarshal | fUnmarshal | fMarshalAttr | fUnmarshalAttr
+	fMode = fElement | fAttr | fEmpty | fOmit | fAny | fFlat | fArray | fBinaryMarshal | fBinaryUnmarshal | fTextMarshal | fTextUnmarshal | fMarshal | fUnmarshal | fMarshalAttr | fUnmarshalAttr
 )
 
 type tinfoMap map[reflect.Type]*typeInfo
@@ -204,6 +208,8 @@ func structFieldInfo(typ reflect.Type, f *reflect.StructField, ns string) (*fiel
 				finfo.flags |= fOmit
 			case "any":
 				finfo.flags |= fAny
+			case "flat":
+				finfo.flags |= fFlat
 			}
 
 			// dissect version(s)
