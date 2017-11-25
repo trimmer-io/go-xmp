@@ -153,6 +153,10 @@ type Preferences struct {
 	Frame      int // F = Frame number of image or -1 if undetermined
 }
 
+func (x Preferences) IsZero() bool {
+	return x.TagStatus == 0 && x.ColorClass == 0 && x.Rating == 0 && x.Frame == 0
+}
+
 func (x Preferences) MarshalText() ([]byte, error) {
 	buf := bytes.Buffer{}
 	buf.WriteString(strconv.FormatInt(int64(x.TagStatus), 10))
