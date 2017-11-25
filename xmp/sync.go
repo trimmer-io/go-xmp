@@ -86,6 +86,7 @@ const (
 	DEFAULT = CREATE | REPLACE | DELETE | UNIQUE
 	MERGE   = CREATE | UNIQUE | NOFAIL
 	EXTEND  = CREATE | REPLACE | UNIQUE | NOFAIL
+	ADD     = CREATE | UNIQUE | NOFAIL
 )
 
 func ParseSyncFlag(s string) SyncFlags {
@@ -106,6 +107,10 @@ func ParseSyncFlag(s string) SyncFlags {
 		return DEFAULT
 	case "merge":
 		return MERGE
+	case "extend":
+		return EXTEND
+	case "add":
+		return ADD
 	default:
 		return 0
 	}
