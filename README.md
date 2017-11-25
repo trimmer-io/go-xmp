@@ -74,32 +74,45 @@ Benchmarks
 ----------
 
 ```
-BenchmarkUnmarshalXMP-8         5000      339876 ns/op     56827 B/op     1007 allocs/op
-BenchmarkMarshalXMP-8           5000      257008 ns/op     60776 B/op      773 allocs/op
-BenchmarkMarshalJSON-8          5000      354320 ns/op     89390 B/op     1099 allocs/op
-BenchmarkUnmarshalJSON-8        5000      334702 ns/op     55558 B/op      915 allocs/op
+go test ./test/ -bench=. -benchmem
+
+goos: darwin
+goarch: amd64
+pkg: trimmer.io/go-xmp/test
+BenchmarkUnmarshalXMP_5kB-8       5000      321524 ns/op     58071 B/op     1056 allocs/op
+BenchmarkMarshalXMP_5kB-8         5000      270981 ns/op     61384 B/op      758 allocs/op
+BenchmarkMarshalJSON_5kB-8        5000      338354 ns/op     91855 B/op     1023 allocs/op
+BenchmarkUnmarshalJSON_5kB-8      5000      382196 ns/op     60387 B/op     1022 allocs/op
+BenchmarkUnmarshalXMP_85kB-8       300     5152080 ns/op    902794 B/op    17779 allocs/op
+BenchmarkMarshalXMP_85kB-8         300     4292143 ns/op    966356 B/op    12209 allocs/op
+BenchmarkMarshalJSON_85kB-8        300     5378268 ns/op   1453004 B/op    16535 allocs/op
+BenchmarkUnmarshalJSON_85kB-8      200     5512114 ns/op    880161 B/op    14497 allocs/op
 ```
 
 XMP Marshal Benchmark using `premiere-cc.xmp`, a rather large xmpDM file with history, xmpMM:Pantry etc.
 
 ```
-  Compression Results 421        mean               min                  max
+  Compression Results 417        mean               min                  max
   -----------------------------------------------------------------------------
-        Original sizes       4082 (100.0)        820 (100.0)      86940 (100.0)
-             XMP sizes       3053 ( 74.1)        681 ( 38.9)      75337 (113.4)
-        XMP Gzip sizes       1030 ( 27.2)        369 (  7.6)       7866 ( 51.5)
-      XMP Snappy sizes       1430 ( 37.2)        456 ( 11.6)      12967 ( 68.7)
-            JSON sizes       1852 ( 43.0)        306 ( 18.5)      62824 ( 90.3)
-       JSON Gzip sizes        782 ( 20.3)        209 (  5.3)       7566 ( 49.5)
-     JSON Snappy sizes       1099 ( 28.0)        252 (  7.8)      11763 ( 77.0)
+        Original sizes       4013 (100.0)        918 (100.0)      86940 (100.0)
+             XMP sizes       3545 ( 90.4)        723 ( 52.3)      78325 (147.0)
+        XMP Gzip sizes       1177 ( 32.0)        369 (  8.4)       8086 ( 61.3)
+      XMP Snappy sizes       1195 ( 32.5)        387 (  8.4)       8104 ( 62.9)
+            JSON sizes       2147 ( 52.8)        389 ( 31.6)      65127 ( 91.7)
+       JSON Gzip sizes        889 ( 23.7)        209 (  6.9)       7714 ( 50.5)
+     JSON Snappy sizes        907 ( 24.3)        227 (  7.0)       7732 ( 50.6)
   -----------------------------------------------------------------------------
-        XML->XMP times          348.609µs            73.19µs         5.156559ms
-       XMP->JSON times          194.575µs           34.239µs         4.500886ms
-        XMP->XML times          200.663µs           35.576µs         3.771858ms
-        XMP Gzip times          242.649µs           99.493µs         1.656697ms
-      XMP Snappy times           25.241µs           10.101µs          261.962µs
-       JSON Gzip times          210.843µs           88.285µs          817.533µs
-     JSON Snappy times           26.084µs            9.305µs          161.167µs
+        XML->XMP times          371.674µs           74.091µs         4.816883ms
+       XMP->JSON times          234.785µs            36.91µs         4.517591ms
+        XMP->XML times          259.084µs           20.004µs         4.505254ms
+        XMP Gzip times          214.342µs          105.685µs         1.036886ms
+      XMP Gunzip times           59.948µs           19.924µs          285.113µs
+      XMP Snappy times           28.325µs            7.975µs          234.161µs
+    XMP Unsnappy times           25.841µs            7.899µs          195.265µs
+       JSON Gzip times          197.268µs            93.86µs          968.985µs
+     JSON Gunzip times           53.622µs           17.655µs         2.913516ms
+     JSON Snappy times           23.581µs            7.864µs          221.674µs
+   JSON Unsnappy times           37.215µs            7.856µs          398.361µs
 ```
 
 Size matters when storing XMP in a database or sending documents over a network. Above is a quick comparison between common compression methods gzip and snappy regarding runtime and size for documents in the samples/ directory. What's also included is a comparison of the uncompressed documents in XMP/XML and XMP/JSON format. Original means the initial XMP document as stored in .xmp sidecar files. To be fair, some originals use padding, so the mean size distribution is larger than what go-xmp generated here because padding was turned off during write.
