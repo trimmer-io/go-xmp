@@ -56,6 +56,10 @@ func (m *DJI) Can(nsName string) bool {
 	return nsName == NsDJI.GetName()
 }
 
+func (x *DJI) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *DJI) SyncFromXMP(d *xmp.Document) error {
 	return nil
 }

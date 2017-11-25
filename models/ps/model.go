@@ -86,6 +86,10 @@ func (x PhotoshopInfo) Namespaces() xmp.NamespaceList {
 	return xmp.NamespaceList{NsPhotoshop}
 }
 
+func (x *PhotoshopInfo) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *PhotoshopInfo) SyncFromXMP(d *xmp.Document) error {
 	return nil
 }

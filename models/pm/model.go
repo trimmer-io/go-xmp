@@ -63,6 +63,10 @@ func (x *Photomechanic) Namespaces() xmp.NamespaceList {
 	return xmp.NamespaceList{NsPm}
 }
 
+func (x *Photomechanic) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *Photomechanic) SyncFromXMP(d *xmp.Document) error {
 	return nil
 }

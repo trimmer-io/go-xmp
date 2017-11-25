@@ -173,6 +173,10 @@ func (m *QtUserdata) Can(nsName string) bool {
 	return nsName == NsQuicktime.GetName()
 }
 
+func (x *QtUserdata) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *QtUserdata) SyncFromXMP(d *xmp.Document) error {
 	return nil
 }

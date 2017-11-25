@@ -79,6 +79,10 @@ func (m *QtProApps) Can(nsName string) bool {
 	return nsName == NsQuicktime.GetName()
 }
 
+func (x *QtProApps) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *QtProApps) SyncFromXMP(d *xmp.Document) error {
 	return nil
 }

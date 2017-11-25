@@ -72,6 +72,10 @@ func (x PagedText) Namespaces() xmp.NamespaceList {
 	return xmp.NamespaceList{NsXmpTPg}
 }
 
+func (x *PagedText) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *PagedText) SyncFromXMP(d *xmp.Document) error {
 	return nil
 }

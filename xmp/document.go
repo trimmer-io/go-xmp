@@ -67,6 +67,20 @@ func (d *Document) Close() {
 	d.nodes = nil
 }
 
+// cross-model sync, must be explicitly called to merge across models
+func (d *Document) SyncModels() error {
+	for _, n := range d.nodes {
+		if n.Model != nil {
+			if err := n.Model.SyncModel(d); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// implicit sync to align standard properties across models (e.g. xmp <-> photoshop)
+// called each time a model is loaded from XMP/XML or XMP/JSON
 func (d *Document) syncFromXMP() error {
 	for _, n := range d.nodes {
 		if n.Model != nil {
@@ -78,6 +92,7 @@ func (d *Document) syncFromXMP() error {
 	return nil
 }
 
+// called each time a model is stored as XMP/XML or XMP/JSON
 func (d *Document) syncToXMP() error {
 	if !d.dirty {
 		return nil

@@ -99,6 +99,10 @@ func (x TiffInfo) Namespaces() xmp.NamespaceList {
 	return []*xmp.Namespace{NsTiff}
 }
 
+func (x *TiffInfo) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *TiffInfo) SyncFromXMP(d *xmp.Document) error {
 	if m := dc.FindModel(d); m != nil {
 		x.Artist = m.Creator

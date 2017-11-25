@@ -135,6 +135,10 @@ func (x XmpDM) Namespaces() xmp.NamespaceList {
 	return xmp.NamespaceList{NsXmpDM}
 }
 
+func (x *XmpDM) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *XmpDM) SyncFromXMP(d *xmp.Document) error {
 	return nil
 }

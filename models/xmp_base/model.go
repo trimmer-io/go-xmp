@@ -110,11 +110,11 @@ var identifierDesc = xmp.SyncDescList{
 	// Panasonic: GlobalClipID (SMPTE UMID) umid:smpte:
 }
 
+func (x *XmpBase) SyncModel(d *xmp.Document) error {
+	return d.SyncMulti(identifierDesc, x)
+}
+
 func (x *XmpBase) SyncFromXMP(d *xmp.Document) error {
-	// sync list
-	if err := d.SyncMulti(identifierDesc, x); err != nil {
-		return err
-	}
 	return nil
 }
 

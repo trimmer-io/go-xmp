@@ -80,6 +80,10 @@ func (m *ID3) Can(nsName string) bool {
 	return nsName == NsID3.GetName()
 }
 
+func (x *ID3) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *ID3) SyncFromXMP(d *xmp.Document) error {
 	if m := dc.FindModel(d); m != nil {
 		if len(m.Title) > 0 {

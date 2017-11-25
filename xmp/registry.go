@@ -28,6 +28,7 @@ type Model interface {
 	Namespaces() NamespaceList
 	SyncFromXMP(d *Document) error
 	SyncToXMP(d *Document) error
+	SyncModel(d *Document) error
 	CanTag(tag string) bool
 	GetTag(tag string) (string, error)
 	SetTag(tag, value string) error

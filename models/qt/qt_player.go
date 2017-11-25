@@ -41,6 +41,10 @@ func (m *QtPlayer) Can(nsName string) bool {
 	return nsName == NsQuicktime.GetName()
 }
 
+func (x *QtPlayer) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *QtPlayer) SyncFromXMP(d *xmp.Document) error {
 	return nil
 }

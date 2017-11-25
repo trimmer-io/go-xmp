@@ -93,6 +93,30 @@ func (m *QtInfo) Can(nsName string) bool {
 	return nsName == NsQuicktime.GetName()
 }
 
+func (x *QtInfo) SyncModel(d *xmp.Document) error {
+	if x.Udta != nil {
+		if err := x.Udta.SyncModel(d); err != nil {
+			return err
+		}
+	}
+	if x.Mdta != nil {
+		if err := x.Mdta.SyncModel(d); err != nil {
+			return err
+		}
+	}
+	if x.Player != nil {
+		if err := x.Player.SyncModel(d); err != nil {
+			return err
+		}
+	}
+	if x.ProApps != nil {
+		if err := x.ProApps.SyncModel(d); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (x *QtInfo) SyncFromXMP(d *xmp.Document) error {
 	if x.Udta != nil {
 		if err := x.Udta.SyncFromXMP(d); err != nil {

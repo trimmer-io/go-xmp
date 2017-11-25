@@ -69,6 +69,10 @@ func (x CC) Namespaces() xmp.NamespaceList {
 	return xmp.NamespaceList{NsCC}
 }
 
+func (x *CC) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *CC) SyncFromXMP(d *xmp.Document) error {
 	return nil
 }

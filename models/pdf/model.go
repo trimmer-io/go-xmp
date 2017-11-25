@@ -74,6 +74,10 @@ func (x PDFInfo) Namespaces() xmp.NamespaceList {
 	return xmp.NamespaceList{NsPDF}
 }
 
+func (x *PDFInfo) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *PDFInfo) SyncFromXMP(d *xmp.Document) error {
 	if m := dc.FindModel(d); m != nil {
 		x.Title = m.Title

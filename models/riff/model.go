@@ -152,6 +152,10 @@ func (m *RiffInfo) Can(nsName string) bool {
 	return nsName == NsRiff.GetName()
 }
 
+func (x *RiffInfo) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *RiffInfo) SyncFromXMP(d *xmp.Document) error {
 	if m := dc.FindModel(d); m != nil {
 		if len(m.Rights) > 0 {

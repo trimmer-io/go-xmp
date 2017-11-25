@@ -59,6 +59,10 @@ func (m *ITunesMetadata) Can(nsName string) bool {
 	return nsName == NsITunes.GetName()
 }
 
+func (x *ITunesMetadata) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *ITunesMetadata) SyncFromXMP(d *xmp.Document) error {
 	return nil
 }

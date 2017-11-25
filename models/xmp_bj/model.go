@@ -62,6 +62,10 @@ func (x JobTicket) Namespaces() xmp.NamespaceList {
 	return xmp.NamespaceList{NsXmpBJ}
 }
 
+func (x *JobTicket) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *JobTicket) SyncFromXMP(d *xmp.Document) error {
 	return nil
 }

@@ -102,6 +102,10 @@ func (m *IXML) Can(nsName string) bool {
 	return nsName == NsIXML.GetName()
 }
 
+func (x *IXML) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *IXML) SyncFromXMP(d *xmp.Document) error {
 	return nil
 }

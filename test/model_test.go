@@ -51,6 +51,10 @@ func (m *TestModel) Can(nsName string) bool {
 	return nsName == NsTest.GetName()
 }
 
+func (x *TestModel) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *TestModel) SyncFromXMP(d *xmp.Document) error {
 	return nil
 }

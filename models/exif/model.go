@@ -259,6 +259,10 @@ func (m *ExifInfo) Can(nsName string) bool {
 	return nsName == NsExif.GetName()
 }
 
+func (x *ExifInfo) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *ExifInfo) SyncFromXMP(d *xmp.Document) error {
 
 	if !x.DateTimeDigitizedXMP.IsZero() {
@@ -440,6 +444,10 @@ func (m *ExifEXInfo) Can(nsName string) bool {
 	return nsName == NsExifEX.GetName()
 }
 
+func (x *ExifEXInfo) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *ExifEXInfo) SyncFromXMP(d *xmp.Document) error {
 	return nil
 }
@@ -501,6 +509,10 @@ func (m *ExifAuxInfo) Namespaces() xmp.NamespaceList {
 
 func (m *ExifAuxInfo) Can(nsName string) bool {
 	return nsName == NsExifAux.GetName()
+}
+
+func (x *ExifAuxInfo) SyncModel(d *xmp.Document) error {
+	return nil
 }
 
 func (x *ExifAuxInfo) SyncFromXMP(d *xmp.Document) error {

@@ -62,6 +62,10 @@ func (m *MP4Info) Can(nsName string) bool {
 	return nsName == NsMP4.GetName()
 }
 
+func (x *MP4Info) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *MP4Info) SyncFromXMP(d *xmp.Document) error {
 	return nil
 }

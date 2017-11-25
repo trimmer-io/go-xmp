@@ -118,6 +118,10 @@ func (m *QtMetadata) Can(nsName string) bool {
 	return nsName == NsQuicktime.GetName()
 }
 
+func (x *QtMetadata) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *QtMetadata) SyncFromXMP(d *xmp.Document) error {
 	if x.Location != nil {
 		x.LocationBody = x.Location.Body

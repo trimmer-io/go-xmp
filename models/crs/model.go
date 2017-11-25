@@ -257,6 +257,10 @@ func (x CameraRawInfo) Namespaces() xmp.NamespaceList {
 	return xmp.NamespaceList{NsCrs}
 }
 
+func (x *CameraRawInfo) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *CameraRawInfo) SyncFromXMP(d *xmp.Document) error {
 	return nil
 }

@@ -64,6 +64,10 @@ func (x XmpRights) Namespaces() xmp.NamespaceList {
 	return xmp.NamespaceList{NsXmpRights}
 }
 
+func (x *XmpRights) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *XmpRights) SyncFromXMP(d *xmp.Document) error {
 	return nil
 }

@@ -77,6 +77,10 @@ func (x DublinCore) Namespaces() xmp.NamespaceList {
 	return xmp.NamespaceList{NsDc}
 }
 
+func (x *DublinCore) SyncModel(d *xmp.Document) error {
+	return nil
+}
+
 func (x *DublinCore) SyncFromXMP(d *xmp.Document) error {
 	return nil
 }
