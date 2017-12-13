@@ -128,6 +128,7 @@ var dateFormats []string = []string{
 	"2006-01-02T15:04:05.999999999Z07:00", // XMP
 	"2006-01-02T15:04:05.999999999Z",
 	"2006-01-02T15:04:05Z",
+	"2006-01-02T15:04:05-0700",
 	"2006:01:02 15:04:05.999",   // MXF
 	"2006/01/02T15:04:05-07:00", // Arri CSV
 	"20060102T15h04m05-07:00",   // Arri QT
@@ -153,12 +154,13 @@ var dateFormats []string = []string{
 // repair single-digit hours in timezones
 // "2011-02-15T10:15:14+1:00"
 // "2011-02-15T10:15:14+1"
+// "2017-09-15T20:17:41+00200", // seen from iPhone5s iOS10 video, ffprobe
 func repairTZ(value string) string {
 	l := len(value)
-	if l < 10 {
+	if l < 20 {
 		return value
 	}
-	a, b := value[l-5], value[l-2]
+	a, b, c := value[l-5], value[l-2], value[l-6]
 	switch a {
 	case '+', '-', 'Z':
 		return value[:l-4] + "0" + value[l-4:]
@@ -166,6 +168,12 @@ func repairTZ(value string) string {
 	switch b {
 	case '+', '-', 'Z':
 		return value[:l-1] + "0" + value[l-1:] + ":00"
+	}
+	switch c {
+	case '+', '-', 'Z':
+		if !strings.Contains(value[l-6:], ":") {
+			return value[:l-5] + value[l-4:]
+		}
 	}
 	return value
 }

@@ -25,6 +25,7 @@ package xmp
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"regexp"
@@ -33,6 +34,8 @@ import (
 	"time"
 	"unicode"
 )
+
+var EEmptyValue = errors.New("empty value")
 
 // Int
 type NullInt int
@@ -47,8 +50,8 @@ func (i NullInt) Value() int {
 
 func ParseNullInt(d string) (NullInt, error) {
 	switch d {
-	case "", "-", "--", "NaN", "unknown":
-		return 0, nil
+	case "", "-", "--", "---", "NaN", "unknown":
+		return 0, EEmptyValue
 	default:
 		// parse integer
 		if i, err := strconv.ParseInt(d, 10, 64); err == nil {
@@ -64,6 +67,9 @@ func (i NullInt) MarshalText() ([]byte, error) {
 
 func (i *NullInt) UnmarshalText(data []byte) error {
 	v, err := ParseNullInt(string(data))
+	if err == EEmptyValue {
+		return nil
+	}
 	if err != nil {
 		return err
 	}
@@ -99,8 +105,8 @@ func (x SplitInt) Value() uint32 {
 func (x *SplitInt) UnmarshalText(data []byte) error {
 	d := string(data)
 	switch d {
-	case "", "-", "--", "NaN", "unknown":
-		*x = 0
+	case "", "-", "--", "---", "NaN", "unknown":
+		return nil
 	default:
 		// parse integer
 		if i, err := strconv.ParseInt(d, 10, 32); err == nil {
@@ -133,13 +139,13 @@ func (s NullString) Value() string {
 	return string(s)
 }
 
-func ParseNullString(s string) NullString {
+func ParseNullString(s string) (NullString, error) {
 	s = strings.TrimSpace(s)
 	switch s {
 	case "", "-", "--", "unknown":
-		return ""
+		return "", EEmptyValue
 	default:
-		return NullString(s)
+		return NullString(s), nil
 	}
 }
 
@@ -148,7 +154,19 @@ func (s NullString) MarshalText() ([]byte, error) {
 }
 
 func (s *NullString) UnmarshalText(data []byte) error {
-	*s = ParseNullString(string(data))
+	// only overwrite when not set
+	if len(*s) > 0 {
+		return nil
+	}
+	// only overwrite when not empty
+	p, err := ParseNullString(string(data))
+	if err == EEmptyValue {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	*s = p
 	return nil
 }
 
@@ -161,6 +179,8 @@ func (x NullBool) Value() bool {
 
 func ParseNullBool(d string) (NullBool, error) {
 	switch strings.ToLower(d) {
+	case "", "-", "--", "---":
+		return NullBool(false), EEmptyValue
 	case "true", "on", "yes", "1", "enabled":
 		return NullBool(true), nil
 	default:
@@ -174,6 +194,9 @@ func (x NullBool) MarshalText() ([]byte, error) {
 
 func (x *NullBool) UnmarshalText(data []byte) error {
 	v, err := ParseNullBool(string(data))
+	if err == EEmptyValue {
+		return nil
+	}
 	if err != nil {
 		return err
 	}
@@ -298,8 +321,8 @@ var cleanFloat = regexp.MustCompile("[^0-9e.+-]")
 
 func ParseNullFloat(d string) (NullFloat, error) {
 	switch strings.ToLower(d) {
-	case "", "-", "--", "unknown":
-		return 0, nil
+	case "", "-", "--", "---", "unknown":
+		return 0, EEmptyValue
 	case "nan":
 		return NullFloat(math.NaN()), nil
 	case "-inf":
@@ -322,6 +345,9 @@ func (f NullFloat) MarshalText() ([]byte, error) {
 
 func (f *NullFloat) UnmarshalText(data []byte) error {
 	v, err := ParseNullFloat(string(data))
+	if err == EEmptyValue {
+		return nil
+	}
 	if err != nil {
 		return err
 	}
@@ -366,8 +392,8 @@ func (f NullFloat64) Value() float64 {
 
 func ParseNullFloat64(d string) (NullFloat64, error) {
 	switch strings.ToLower(d) {
-	case "", "-", "--", "unknown":
-		return 0, nil
+	case "", "-", "--", "---", "unknown":
+		return 0, EEmptyValue
 	case "nan":
 		return NullFloat64(math.NaN()), nil
 	case "-inf":
@@ -390,6 +416,9 @@ func (f NullFloat64) MarshalText() ([]byte, error) {
 
 func (f *NullFloat64) UnmarshalText(data []byte) error {
 	v, err := ParseNullFloat64(string(data))
+	if err == EEmptyValue {
+		return nil
+	}
 	if err != nil {
 		return err
 	}
