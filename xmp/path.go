@@ -975,6 +975,10 @@ func SetModelPath(v Model, path Path, value string, flags SyncFlags) error {
 }
 
 func (d *Document) ListPaths() (PathValueList, error) {
+	// sync individual models to establish correct XMP entries
+	if err := d.syncXMP(); err != nil {
+		return err
+	}
 	l := make(PathValueList, 0)
 	for _, v := range d.nodes {
 		if v.Model != nil {
