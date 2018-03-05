@@ -95,20 +95,23 @@ func TestMergeDocuments(T *testing.T) {
 			continue
 		}
 		dec := xmp.NewDecoder(f)
-		d1 := &xmp.Document{}
+		d1 := xmp.NewDocument() //&xmp.Document{}
 		if err := dec.Decode(d1); err != nil {
 			T.Errorf("%s: %v", v, err)
 		}
 		f.Close()
-		d2 := xmp.NewDocument()
-		if err := d2.Merge(d1, xmp.MERGE); err != nil {
-			T.Errorf("merge failed for '%s': %v", v, err)
-			continue
-		}
-		// compare all paths
+		// set the model dirty so ListPaths will call SyncToXmp to make sure all
+		// cross-model relations are in sync; this is required to get the same result
+		// compared to d2 (after merge) which will also run ListPaths on a dirty document
+		d1.SetDirty()
 		p1, err := d1.ListPaths()
 		if err != nil {
 			T.Errorf("%s: %v", v, err)
+			continue
+		}
+		d2 := xmp.NewDocument()
+		if err := d2.Merge(d1, xmp.MERGE); err != nil {
+			T.Errorf("merge failed for '%s': %v", v, err)
 			continue
 		}
 		p2, err := d2.ListPaths()
@@ -116,6 +119,7 @@ func TestMergeDocuments(T *testing.T) {
 			T.Errorf("%s: %v", v, err)
 			continue
 		}
+		// compare all paths
 		if l1, l2 := len(p1), len(p2); l1 != l2 {
 			T.Errorf("merge '%s': invalid number of paths: exp=%d got=%d", v, l1, l2)
 			for _, v := range p1.Diff(p2) {
