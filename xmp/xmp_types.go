@@ -131,6 +131,7 @@ var dateFormats []string = []string{
 	"2006-01-02T15:04:05-0700",
 	"2006:01:02 15:04:05.999",   // MXF
 	"2006/01/02T15:04:05-07:00", // Arri CSV
+	"06/01/02T15:04:05-07:00",   // Arri CSV
 	"20060102T15h04m05-07:00",   // Arri QT
 	"20060102T15h04m05s-07:00",  // Arri XML in MXF
 	"2006-01-02T15:04:05",
@@ -151,11 +152,20 @@ var dateFormats []string = []string{
 	"2006-00-00T00:00:00Z",          // zero filler to catch potential bad date strings
 }
 
+var illegalZero units.StringList = units.StringList{
+	"--", // ARRI undefined
+	"00/00/00T00:00:00+00:00", // ARRI zero time
+}
+
 // repair single-digit hours in timezones
+// "00/00/00T00:00:00+00:00", // ARRI zero time
 // "2011-02-15T10:15:14+1:00"
 // "2011-02-15T10:15:14+1"
 // "2017-09-15T20:17:41+00200", // seen from iPhone5s iOS10 video, ffprobe
 func repairTZ(value string) string {
+	if illegalZero.Contains(value) {
+		return "0001-01-01T00:00:00Z"
+	}
 	l := len(value)
 	if l < 20 {
 		return value
