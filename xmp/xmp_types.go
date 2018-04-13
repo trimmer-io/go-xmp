@@ -152,7 +152,7 @@ var dateFormats []string = []string{
 	"2006-00-00T00:00:00Z",          // zero filler to catch potential bad date strings
 }
 
-var illegalZero units.StringList = units.StringList{
+var illegalZero StringList = StringList{
 	"--", // ARRI undefined
 	"00/00/00T00:00:00+00:00", // ARRI zero time
 }
