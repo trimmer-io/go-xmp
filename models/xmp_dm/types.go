@@ -278,9 +278,26 @@ func (x *CuePointParamArray) UnmarshalXMP(d *xmp.Decoder, node *xmp.Node, m xmp.
 	return xmp.UnmarshalArray(d, node, x.Typ(), x)
 }
 
-type VideoFrameRate float32
+type VideoFrameRate float64
 
 func (x *VideoFrameRate) UnmarshalText(data []byte) error {
+	// try detecting supported strings
+	switch strings.ToUpper(string(data)) {
+	case "NTSC":
+		*x = VideoFrameRate(29.97)
+		return nil
+	case "PAL":
+		*x = VideoFrameRate(25)
+		return nil
+	}
+
+	// try parsing as rational
+	rat := &xmp.Rational{}
+	if err := rat.UnmarshalText(data); err == nil {
+		*x = VideoFrameRate(rat.Value())
+		return nil
+	}
+
 	// parse as float value, strip trailing "fps"
 	v := strings.TrimSpace(strings.TrimSuffix(string(data), "fps"))
 	v = strings.TrimSuffix(v, "i")
