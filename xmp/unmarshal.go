@@ -281,7 +281,7 @@ func (d *Decoder) unmarshal(val reflect.Value, finfo *fieldInfo, src *Node) erro
 	} else {
 		// otherwise set simple value directly
 		if err := setValue(val, src.Value); err != nil {
-			return err
+			return fmt.Errorf("xmp: unmarshal %s: %v", finfo.String(), err)
 		}
 	}
 
@@ -317,7 +317,7 @@ func (d *Decoder) unmarshalAttr(val reflect.Value, finfo *fieldInfo, src Attr) e
 		// Recur to read element into slice.
 		if err := d.unmarshalAttr(val.Index(n), nil, src); err != nil {
 			val.SetLen(n)
-			return err
+			return fmt.Errorf("xmp: unmarshal %s: %v", finfo.String(), err)
 		}
 		return nil
 	}

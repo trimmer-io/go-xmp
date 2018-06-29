@@ -37,7 +37,13 @@ type fieldInfo struct {
 }
 
 func (f fieldInfo) String() string {
-	s := []string{fmt.Sprintf("FieldInfo: %s %v %v %v", f.name, f.idx, f.minVersion, f.maxVersion)}
+	s := []string{fmt.Sprintf("field %s (%v)", f.name, f.idx)}
+	if !f.minVersion.IsZero() {
+		s = append(s, "vmin", f.minVersion.String())
+	}
+	if !f.maxVersion.IsZero() {
+		s = append(s, "vmax", f.maxVersion.String())
+	}
 	if f.flags&fAttr > 0 {
 		s = append(s, "Attr")
 	}
