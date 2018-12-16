@@ -1,3 +1,5 @@
+// from http://www.exiv2.org/tags-xmp-digiKam.html
+
 package digikam
 
 import (
@@ -39,8 +41,8 @@ type Digikam struct {
 	CaptionsDateTimeStamps xmp.AltString  `xmp:"digiKam:CaptionsDateTimeStamps"`
 	ImageHistory           string         `xmp:"digiKam:ImageHistory"`
 	LensCorrectionSettings string         `xmp:"digiKam:LensCorrectionSettings"`
-	ColorLabel             string         `xmp:"digiKam:ColorLabel"`
-	PickLabel              string         `xmp:"digiKam:PickLabel"`
+	ColorLabel             ColorLabel     `xmp:"digiKam:ColorLabel"`
+	PickLabel              PickLabel      `xmp:"digiKam:PickLabel"`
 }
 
 func (x Digikam) Can(nsName string) bool {
