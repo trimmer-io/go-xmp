@@ -40,6 +40,7 @@ type Digikam struct {
 	CaptionsAutorNames     xmp.AltString  `xmp:"digiKam:CaptionsAutorNames"`
 	CaptionsDateTimeStamps xmp.AltString  `xmp:"digiKam:CaptionsDateTimeStamps"`
 	ImageHistory           string         `xmp:"digiKam:ImageHistory"`
+	ImageUniqueID          string         `xmp:"digiKam:ImageUniqueID"`
 	LensCorrectionSettings string         `xmp:"digiKam:LensCorrectionSettings"`
 	ColorLabel             ColorLabel     `xmp:"digiKam:ColorLabel"`
 	PickLabel              PickLabel      `xmp:"digiKam:PickLabel"`
