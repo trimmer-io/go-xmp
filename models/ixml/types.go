@@ -19,8 +19,8 @@ import (
 	"fmt"
 	"strings"
 
-	"trimmer.io/go-xmp/models/xmp_dm"
-	"trimmer.io/go-xmp/xmp"
+	"github.com/trimmer-io/go-xmp/models/xmp_dm"
+	"github.com/trimmer-io/go-xmp/xmp"
 )
 
 type Bool bool

@@ -17,7 +17,7 @@ package xmpbase
 
 import (
 	"bytes"
-	"trimmer.io/go-xmp/xmp"
+	"github.com/trimmer-io/go-xmp/xmp"
 )
 
 type Rating int

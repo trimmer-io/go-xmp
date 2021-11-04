@@ -15,7 +15,7 @@
 package itunes
 
 import (
-	"trimmer.io/go-xmp/xmp"
+	"github.com/trimmer-io/go-xmp/xmp"
 	// "howett.net/plist"
 )
 

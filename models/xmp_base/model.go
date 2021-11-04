@@ -18,7 +18,7 @@ package xmpbase
 import (
 	"fmt"
 	"strings"
-	"trimmer.io/go-xmp/xmp"
+	"github.com/trimmer-io/go-xmp/xmp"
 )
 
 var (

@@ -20,9 +20,9 @@ import (
 	"fmt"
 	"strings"
 
-	"trimmer.io/go-xmp/models/dc"
-	"trimmer.io/go-xmp/models/xmp_base"
-	"trimmer.io/go-xmp/xmp"
+	"github.com/trimmer-io/go-xmp/models/dc"
+	"github.com/trimmer-io/go-xmp/models/xmp_base"
+	"github.com/trimmer-io/go-xmp/xmp"
 )
 
 var (
